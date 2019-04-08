@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+/*============================ INCLUDES ======================================*/
+#include <stdbool.h>
+#include "stm32f1xx_hal.h"
+
+/*============================ MACROS ========================================*/
+#define LED1_ON() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET)
+#define LED1_OFF() HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET)
+#define LED2_ON()   // todo
+#define LED2_OFF()  // todo
+
+/*============================ MACROFIED FUNCTIONS ===========================*/
+/*============================ TYPES =========================================*/
+/*============================ GLOBAL VARIABLES ==============================*/
+/*============================ LOCAL VARIABLES ===============================*/
+/*============================ PROTOTYPES ====================================*/
+
+void led_init(void) {
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+
+    /*Configure GPIO pin : PC13 */
+    GPIO_InitStruct.Pin = GPIO_PIN_13;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+}
+
+void breath_led(void) {
+    static uint32_t s_wCycleCount = 0;  //记录进入中断的次数，满一个周期清零
+    static uint32_t s_wDutyCount = 10;  //存储当前高电平对应的定时次数
+    static uint32_t s_wUpdateCount = 0;  //占空比更新时间
+    static uint32_t s_wTimer = 0;
+    static bool s_bDirectFlag = false;
+    if (s_wTimer >= 1200) {  //Լ100us
+        s_wCycleCount++;
+        s_wUpdateCount++;
+        if (s_wCycleCount == s_wDutyCount) LED1_ON();
+        if (s_wCycleCount >= 20) {
+            LED1_OFF();
+            s_wCycleCount = 0;
+        }
+        if ((120 == s_wUpdateCount) && (!s_bDirectFlag)) {
+            s_wUpdateCount = 0;
+            s_wDutyCount++;
+            if (s_wDutyCount >= 20) {
+                s_bDirectFlag = true;
+            }
+        }
+        if ((120 == s_wUpdateCount) && (s_bDirectFlag)) {
+            s_wUpdateCount = 0;
+            s_wDutyCount--;
+            if (s_wDutyCount <= 0) {
+                s_bDirectFlag = false;
+            }
+        }
+        s_wTimer = 0;
+    } else {
+        s_wTimer++;
+    }
+}
