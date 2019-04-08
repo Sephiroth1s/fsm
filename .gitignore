@@ -53,3 +53,12 @@ dkms.conf
 # VSCode
 *.ipch
 *.json
+# keli
+*.crf
+*.lst
+*.sct
+*.Bak
+*.lnp
+*.htm
+*.axf
+*.dep
