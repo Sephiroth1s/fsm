@@ -2,38 +2,52 @@
 #include "app_cfg.h"
 #include "queue.h"
 
-bool wait_event(event_t *ptEvent) 
+bool enqueue_byte( byte_queue_t* ptThis,uint8_t* pchByte)
 {
-    if (ptEvent != NULL) {
-        if (!ptEvent->bAutoReset) {
-            if (ptEvent->bIsSet) {
-                return true;
-            }
-        } else {
-            if (ptEvent->bIsSet) {
-                ptEvent->bIsSet = false;
-                return true;
-            }
+     if(ptThis==NULL)
+     {
+         return false;
+     }
+     if(this.hwTail<this.hwSize){
+        this.pchBuffer[this.hwTail]=*pchByte;
+        this.hwTail++;
+        return true;
+     } 
+     return false;
+     
+}
+bool dequeue_byte(byte_queue_t* ptThis,uint8_t* pchByte)
+{
+    if(ptThis==NULL)
+     {
+         return false;
+     }
+     if(!is_byte_queue_empty(ptThis)){
+        *pchByte=this.pchBuffer[this.hwHead];
+        this.hwHead++;
+        return true;
+     } 
+     return false;
+}
+bool is_byte_queue_empty(byte_queue_t* ptThis)
+{
+    if(ptThis != NULL)
+    {
+        if(!(this.hwTail-this.hwHead)){
+            return true;
         }
     }
     return false;
 }
-void init_event(event_t *ptEvent, bool bInitValue, bool bManualReset) 
+bool init_byte_queue(byte_queue_t* ptThis,uint8_t *pchBuffer,uint16_t hwSize)
 {
-    if (ptEvent != NULL) {
-        ptEvent->bAutoReset = !bManualReset;
-        ptEvent->bIsSet = bInitValue;
+    if(ptThis!=NULL)
+    {
+        this.hwHead=0;
+        this.hwTail=0;
+        this.pchBuffer=pchBuffer;
+        this.hwSize=hwSize;
+        return true;
     }
-}
-void set_event(event_t *ptEvent) 
-{
-    if (ptEvent != NULL) {
-        ptEvent->bIsSet = true;
-    }
-}
-void reset_event(event_t *ptEvent) 
-{
-    if (ptEvent != NULL) {
-        ptEvent->bIsSet = false;
-    }
+    return false;
 }

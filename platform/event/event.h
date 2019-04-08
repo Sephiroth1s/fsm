@@ -1,10 +1,6 @@
 #include "app_cfg.h"
 #ifndef __EVENT_H__
 #define __EVENT_H__
-#define TASK_RESET_FSM()  \
-    do {                  \
-        s_tState = START; \
-    } while (0)
 
 #define SET_EVENT(__EVENT) set_event(__EVENT)
 #define WAIT_EVENT(__EVENT) (wait_event(__EVENT))
