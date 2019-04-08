@@ -50,9 +50,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
 # VSCode
 *.ipch
 *.json
+.vscode/
+
 # keli
 *.crf
 *.lst
@@ -62,3 +65,4 @@ dkms.conf
 *.htm
 *.axf
 *.dep
+build/mdk/fsm/*

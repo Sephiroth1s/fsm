@@ -9,6 +9,7 @@
 #include "./uart/uart.h"
 #include "./event/event.h"
 #include "./mailbox/mailbox.h"
+#include "./queue/queue.h"
 #include "./check_string/check_string.h"
 #include "./print_string/print_string.h"
 #include "./critical_sector/critical_sector.h"
