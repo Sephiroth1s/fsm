@@ -4,11 +4,13 @@
 #include "./platform/platform.h"
 /*============================ MACROS ========================================*/
 #define this (*ptThis)
+#define SIZE 100
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrint;
+static uint8_t s_chByte[SIZE];
 static byte_queue_t s_tFIFOin;
 /*============================ PROTOTYPES ====================================*/
 
@@ -23,19 +25,27 @@ static fsm_rt_t print_hello(void);
 static fsm_rt_t check_world(void);
 static fsm_rt_t task_check(void);
 static fsm_rt_t task_print(void);
-
+static void serial_in_task(void);
 int main(void) 
 {
     platform_init();
     INIT_EVENT(&s_tPrint, false, false);
+    INIT_BYTE_QUEUE(&s_tFIFOin,s_chByte,SIZE);
     LED1_OFF();
     while (1) {
         breath_led();
         task_check();
         task_print();
+        serial_in_task();
     }
 }
-
+void serial_in_task(void)
+{
+    uint8_t chByte;
+    if(serial_in(&chByte)){
+        ENQUEUE_BYTE(&s_tFIFOin,&chByte);
+    }
+}
 static fsm_rt_t task_check(void) 
 {
     static enum { 
