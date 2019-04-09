@@ -65,4 +65,9 @@ dkms.conf
 *.htm
 *.axf
 *.dep
-build/mdk/fsm/*
+*.scvd
+*.uvguix.*
+build/mdk/fsm/
+build/mdk/DebugConfig/
+
+
