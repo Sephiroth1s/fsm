@@ -70,4 +70,8 @@ dkms.conf
 build/mdk/fsm/
 build/mdk/DebugConfig/
 
+# Visio
+*.vsd
+*.~vsd
+
 

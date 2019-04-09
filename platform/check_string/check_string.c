@@ -1,8 +1,9 @@
 
 #include "app_cfg.h"
 #include "check_string.h"
+#include "../queue/queue.h"
 
-bool check_string_init(check_str_t *ptCHK, uint8_t *pchString) 
+bool check_string_init(check_str_t *ptCHK, uint8_t *pchString,byte_queue_t*ptFIFOin) 
 {
     enum { 
         START 
@@ -12,6 +13,7 @@ bool check_string_init(check_str_t *ptCHK, uint8_t *pchString)
     }
     ptCHK->pchString = pchString;
     ptCHK->chState = START;
+    ptCHK->ptFIFOin =ptFIFOin;
     return true;
 }
 
@@ -40,7 +42,7 @@ fsm_rt_t check_string(check_str_t *ptCHK)
             }
             // break;
         case READ_CHAR:
-            if (serial_in(&this.chCurrentByte)) {
+            if (DEQUEUE_BYTE(this.ptFIFOin,&this.chCurrentByte)) {
                 this.chState = CHECK_WORLD;
                 // break;
             } else {

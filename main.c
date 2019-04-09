@@ -100,7 +100,7 @@ static fsm_rt_t check_world(void)
     } s_tState = START;
     switch (s_tState) {
         case START:
-            check_string_init(&s_tCheckWorld, "world");
+            check_string_init(&s_tCheckWorld, "world",&s_tFIFOin);
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
