@@ -43,7 +43,7 @@ void serial_in_task(void)
 {
     uint8_t chByte;
     if(serial_in(&chByte)){
-        ENQUEUE_BYTE(&s_tFIFOin,&chByte);
+        ENQUEUE_BYTE(&s_tFIFOin,chByte);
     }
 }
 static fsm_rt_t task_check(void) 
