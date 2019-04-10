@@ -5,36 +5,31 @@
 #define this (*ptThis)
 bool enqueue_byte( byte_queue_t* ptThis,uint8_t chByte)
 {
-    if (ptThis == NULL) {
+    if ((ptThis == NULL)||(is_byte_queue_full(ptThis))) {
         return false;
     }
-    if (!is_byte_queue_full(ptThis)) {
-        this.pchBuffer[this.hwTail] = chByte;
-        this.hwTail++;
-        if(this.hwTail>=this.hwSize){
-            this.hwTail = 0;
-        }
-        this.hwLength++;
-        return true;
+    this.pchBuffer[this.hwTail] = chByte;
+    this.hwTail++;
+    if(this.hwTail>=this.hwSize){
+        this.hwTail = 0;
     }
-    return false;
+    this.hwLength++;
+    return true;
+    
 }
 
 bool dequeue_byte(byte_queue_t* ptThis,uint8_t* pchByte)
 {
-    if (ptThis == NULL) {
+    if ((ptThis == NULL)||(is_byte_queue_empty(ptThis))) {
         return false;
     }
-    if (!is_byte_queue_empty(ptThis)) {
-        *pchByte = this.pchBuffer[this.hwHead];
-        this.hwHead++;
-        if(this.hwHead>=this.hwSize){
-            this.hwHead = 0;
-        }
-        this.hwLength--;
-        return true;
+    *pchByte = this.pchBuffer[this.hwHead];
+    this.hwHead++;
+    if(this.hwHead>=this.hwSize){
+        this.hwHead = 0;
     }
-    return false;
+    this.hwLength--;
+    return true;
 }
 
 bool is_byte_queue_full(byte_queue_t* ptThis)
