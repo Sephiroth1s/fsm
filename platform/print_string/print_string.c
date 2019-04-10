@@ -1,7 +1,7 @@
 
 #include "app_cfg.h"
 #include "print_string.h"
-
+#include "../utilities/arm/app_type.h"
 bool print_string_init(print_str_t *ptPRN, uint8_t *pchString) 
 {
     enum { 

@@ -69,7 +69,7 @@ dkms.conf
 *.uvguix.*
 build/mdk/fsm/
 build/mdk/DebugConfig/
-!*.uvpoptx
+!*.uvoptx
 !*.uvprojx
 
 # Visio

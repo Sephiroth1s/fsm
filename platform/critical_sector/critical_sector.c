@@ -1,6 +1,7 @@
 
 #include "app_cfg.h"
 #include "critical_sector.h"
+#include "../utilities/arm/app_type.h"
 
 void init_critical_sector(critical_sector_t *ptCritical) 
 {

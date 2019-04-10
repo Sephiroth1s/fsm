@@ -1,6 +1,7 @@
 #include "app_cfg.h"
 #ifndef __EVENT_H__
 #define __EVENT_H__
+#include "../utilities/arm/app_type.h"
 
 #define SET_EVENT(__EVENT) set_event(__EVENT)
 #define WAIT_EVENT(__EVENT) (wait_event(__EVENT))

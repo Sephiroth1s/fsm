@@ -1,7 +1,7 @@
 
 #include "app_cfg.h"
 #include "event.h"
-
+#include "../utilities/arm/app_type.h"
 bool wait_event(event_t *ptEvent) 
 {
     if (ptEvent != NULL) {

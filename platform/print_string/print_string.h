@@ -1,6 +1,7 @@
 #include "app_cfg.h"
 #ifndef __PRINT_STRING_H__
 #define __PRINT_STRING_H__
+#include "../utilities/arm/app_type.h"
 #define this (*ptThis)
 #define TASK_STR_RESET_FSM()  \
     do {                      \

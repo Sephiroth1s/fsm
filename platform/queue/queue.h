@@ -1,7 +1,7 @@
 #include "app_cfg.h"
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
-
+#include "../utilities/arm/app_type.h"
 #define this (*ptThis)
 #define TASK_RESET_FSM()  \
     do {                  \
@@ -21,10 +21,11 @@ typedef struct {
     uint16_t hwLength;
 } byte_queue_t;
 
-extern bool enqueue_byte( byte_queue_t* ptThis,uint8_t pchByte);
-extern bool dequeue_byte(byte_queue_t* ptThis,uint8_t* pchByte);
+extern bool enqueue_byte(byte_queue_t* ptThis, uint8_t pchByte);
+extern bool dequeue_byte(byte_queue_t* ptThis, uint8_t* pchByte);
 extern bool is_byte_queue_empty(byte_queue_t* ptThis);
-extern bool init_byte_queue(byte_queue_t* ptThis,uint8_t *pchByte,uint16_t hwSize);
+extern bool is_byte_queue_full(byte_queue_t* ptThis);
+extern bool init_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte,uint16_t hwSize);
 
 #endif
 
