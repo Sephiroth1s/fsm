@@ -1,11 +1,11 @@
 
-#include "app_cfg.h"
 #include "check_string.h"
-#include "../queue/queue.h"
-#include "../utilities/arm/app_type.h"
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+#include "../queue/queue.h"
+#include "../utilities/arm/app_type.h"
+#include "app_cfg.h"
 
 #define this (*ptThis)
 #define TASK_STR_RESET_FSM()  \
@@ -13,27 +13,27 @@
         this.chState = START; \
     } while (0)
 
-bool check_string_init(check_str_t *ptCHK, uint8_t *pchString,byte_queue_t*ptFIFOin) 
+bool check_string_init(check_str_t *ptCHK, uint8_t *pchString, byte_queue_t *ptFIFOin)
 {
-    enum { 
-        START 
+    enum {
+        START
     };
     if (ptCHK == NULL) {
         return false;
     }
     ptCHK->pchString = pchString;
     ptCHK->chState = START;
-    ptCHK->ptFIFOin =ptFIFOin;
+    ptCHK->ptFIFOin = ptFIFOin;
     return true;
 }
 
-fsm_rt_t check_string(check_str_t *ptCHK) 
+fsm_rt_t check_string(check_str_t *ptCHK)
 {
-    enum { 
-        START, 
-        CHECK_END, 
-        READ_CHAR, 
-        CHECK_WORLD 
+    enum {
+        START,
+        CHECK_END,
+        READ_CHAR,
+        CHECK_WORLD
     };
     check_str_t *ptThis = ptCHK;
     if (ptThis == NULL) {
