@@ -3,6 +3,16 @@
 #include "check_string.h"
 #include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#define this (*ptThis)
+#define TASK_STR_RESET_FSM()  \
+    do {                      \
+        this.chState = START; \
+    } while (0)
+
 bool check_string_init(check_str_t *ptCHK, uint8_t *pchString,byte_queue_t*ptFIFOin) 
 {
     enum { 

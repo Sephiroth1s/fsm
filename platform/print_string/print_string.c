@@ -2,6 +2,16 @@
 #include "app_cfg.h"
 #include "print_string.h"
 #include "../utilities/arm/app_type.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#define this (*ptThis)
+#define TASK_STR_RESET_FSM()  \
+    do {                      \
+        this.chState = START; \
+    } while (0)
+    
 bool print_string_init(print_str_t *ptPRN, uint8_t *pchString) 
 {
     enum { 

@@ -2,15 +2,13 @@
 #ifndef __MAILBOX_H__
 #define __MAILBOX_H__
 #include "event.h"
-#define TASK_RESET_FSM()  \
-    do {                  \
-        s_tState = START; \
-    } while (0)
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
     
 #define INIT_MAIL(__MAIL) init_mail(__MAIL)
 #define POST_MAIL(__MAIL, __TARGET) post_mail(__MAIL, __TARGET)
 #define OPEN_MAIL(__MAIL) (open_mail(__MAIL))
-
 
 typedef struct {
     event_t tSealed;

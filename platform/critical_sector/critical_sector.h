@@ -1,7 +1,9 @@
 #include "app_cfg.h"
 #ifndef __CRITICAL_SECTOR_H__
 #define __CRITICAL_SECTOR_H__
-#include "../utilities/arm/app_type.h"
+#include <stddef.h>
+#include <stdbool.h>
+
 #define ENTER_CRITICAL_SECTOR(__CRITICAL) (enter_critical_sector(__CRITICAL))
 #define LEAVE_CRITICAL_SECTOR(__CRITICAL) leave_critical_sector(__CRITICAL)
 #define INIT_CRITICAL_SECTOR(__CRITICAL) init_critical_sector(__CRITICAL)

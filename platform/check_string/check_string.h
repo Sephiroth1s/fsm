@@ -3,12 +3,9 @@
 #define __CHECK_STRING_H__
 #include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
-#define this (*ptThis)
-#define TASK_STR_RESET_FSM()  \
-    do {                      \
-        this.chState = START; \
-    } while (0)
-    
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>  
 
 typedef struct {
     uint8_t chState;

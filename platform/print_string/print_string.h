@@ -2,12 +2,10 @@
 #ifndef __PRINT_STRING_H__
 #define __PRINT_STRING_H__
 #include "../utilities/arm/app_type.h"
-#define this (*ptThis)
-#define TASK_STR_RESET_FSM()  \
-    do {                      \
-        this.chState = START; \
-    } while (0)
-    
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
 typedef struct {
     uint8_t *pchString;
     uint8_t chState;

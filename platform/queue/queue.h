@@ -1,12 +1,9 @@
 #include "app_cfg.h"
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
-#include "../utilities/arm/app_type.h"
-#define this (*ptThis)
-#define TASK_RESET_FSM()  \
-    do {                  \
-        s_tState = START; \
-    } while (0)
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #define ENQUEUE_BYTE(__QUEUE,__OBJ) (enqueue_byte(__QUEUE,__OBJ))
 #define DEQUEUE_BYTE(__QUEUE,__ADDR) (dequeue_byte(__QUEUE,__ADDR))
