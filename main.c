@@ -14,8 +14,9 @@
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrint;
-static uint8_t s_chByte[SIZE];
-static byte_queue_t s_tFIFOin;
+static uint8_t s_chBytein[SIZE];
+static uint8_t s_chByteout[SIZE];
+static byte_queue_t s_tFIFOin, s_tFIFOout;
 /*============================ PROTOTYPES ====================================*/
 
 /**
@@ -29,17 +30,20 @@ static fsm_rt_t check_world(void);
 static fsm_rt_t task_check(void);
 static fsm_rt_t task_print(void);
 static fsm_rt_t serial_in_task(void);
+static fsm_rt_t serial_task_out(void);
 int main(void)
 {
     platform_init();
     INIT_EVENT(&s_tPrint, false, false);
-    INIT_BYTE_QUEUE(&s_tFIFOin, s_chByte, SIZE);
+    INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, SIZE);
+    INIT_BYTE_QUEUE(&s_tFIFOout, s_chByteout, SIZE);
     LED1_OFF();
     while (1) {
         breath_led();
         task_check();
         task_print();
         serial_in_task();
+        serial_task_out();
     }
 }
 fsm_rt_t serial_in_task(void)
@@ -51,10 +55,42 @@ fsm_rt_t serial_in_task(void)
     uint8_t chByte;
     switch (s_tState) {
         case START:
+            s_tState = START;
             //break;
         case REDA_AND_ENQUEUE:
             if (serial_in(&chByte)) {
                 ENQUEUE_BYTE(&s_tFIFOin, chByte);
+                return fsm_rt_cpl;
+            }
+            break;
+        default:
+            return fsm_rt_err;
+            break;
+    }
+    return fsm_rt_on_going;
+}
+fsm_rt_t serial_task_out(void)
+{
+    static enum {
+        START,
+        DEQUEUE,
+        SEND_BYTE
+    } s_tState = START;
+    static uint8_t s_chByte;
+    switch (s_tState) {
+        case START:
+            s_tState = START;
+            //break;
+        case DEQUEUE:
+            if (!DEQUEUE_BYTE(&s_tFIFOout, &s_chByte)) {
+                break;
+            } else {
+                s_tState = SEND_BYTE;
+            }
+            //break;
+        case SEND_BYTE:
+            if (serial_out(s_chByte)) {
+                TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
             break;
@@ -145,7 +181,7 @@ static fsm_rt_t print_hello(void)
     } s_tState = START;
     switch (s_tState) {
         case START:
-            print_string_init(&s_tPrintString, "hello");
+            print_string_init(&s_tPrintString, "hello", &s_tFIFOout);
             s_tState = WAIT_PRINT;
             // break;
         case WAIT_PRINT:

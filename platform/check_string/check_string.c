@@ -1,11 +1,12 @@
 
+#include "app_cfg.h"
 #include "check_string.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
-#include "app_cfg.h"
+
 
 #define this (*ptThis)
 #define TASK_STR_RESET_FSM()  \

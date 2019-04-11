@@ -1,6 +1,7 @@
 
 #include "app_cfg.h"
 #include "print_string.h"
+#include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -11,26 +12,27 @@
     do {                      \
         this.chState = START; \
     } while (0)
-    
-bool print_string_init(print_str_t *ptPRN, uint8_t *pchString) 
+
+bool print_string_init(print_str_t *ptPRN, uint8_t *pchString, byte_queue_t *ptFIFOout)
 {
-    enum { 
-        START 
+    enum {
+        START
     };
-    if (ptPRN == NULL) {
+    if (NULL == ptPRN) {
         return false;
     }
     ptPRN->pchString = pchString;
+    ptPRN->ptFIFOout = ptFIFOout;
     ptPRN->chState = 0;
     return true;
 }
 
-fsm_rt_t print_string(print_str_t *ptPRN) 
+fsm_rt_t print_string(print_str_t *ptPRN)
 {
-    enum { 
-        START, 
-        PRINT_CHECK, 
-        PRINT_STR 
+    enum {
+        START,
+        PRINT_CHECK,
+        PRINT_STR
     };
     print_str_t *ptThis = ptPRN;
     if (ptPRN == NULL) {
@@ -49,7 +51,7 @@ fsm_rt_t print_string(print_str_t *ptPRN)
             }
             // break;
         case PRINT_STR:
-            if (serial_out(*this.pchString)) {
+            if (ENQUEUE_BYTE(this.ptFIFOout, *this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }
