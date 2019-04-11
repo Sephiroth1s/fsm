@@ -7,24 +7,24 @@
 #include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
 
-
 #define this (*ptThis)
 #define TASK_STR_RESET_FSM()  \
     do {                      \
         this.chState = START; \
     } while (0)
 
-bool check_string_init(check_str_t *ptCHK, uint8_t *pchString, byte_queue_t *ptFIFOin)
+bool check_string_init(check_str_t *ptCHK, uint8_t *pchString, byte_queue_t *ptFIFOin, dequeue_byte_t *fndequeue)
 {
     enum {
         START
     };
-    if (ptCHK == NULL) {
+    if ((NULL == ptCHK) || (NULL == pchString) || (NULL == ptFIFOin) || (NULL == fndequeue)) {
         return false;
     }
     ptCHK->pchString = pchString;
     ptCHK->chState = START;
     ptCHK->ptFIFOin = ptFIFOin;
+    ptCHK->fnDequeue = fndequeue;
     return true;
 }
 
@@ -53,7 +53,7 @@ fsm_rt_t check_string(check_str_t *ptCHK)
             }
             // break;
         case READ_CHAR:
-            if (DEQUEUE_BYTE(this.ptFIFOin, &this.chCurrentByte)) {
+            if ((*this.fnDequeue)(this.ptFIFOin, &this.chCurrentByte)) {
                 this.chState = CHECK_WORLD;
                 // break;
             } else {
