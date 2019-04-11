@@ -9,8 +9,8 @@
         s_tState = START; \
     } while (0)
 #define SIZE 100
-#define ENQUEUE_BYTE enqueue_byte
-#define DEQUEUE_BYTE dequeue_byte
+#define FN_ENQUEUE_BYTE enqueue_byte
+#define FN_DEQUEUE_BYTE dequeue_byte
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
@@ -154,9 +154,10 @@ static fsm_rt_t check_world(void)
         START,
         CHECK_STRING
     } s_tState = START;
+    static check_str_cfg_t s_tCheckWorldCFG = {START,"world", &s_tFIFOin, FN_DEQUEUE_BYTE};
     switch (s_tState) {
         case START:
-            check_string_init(&s_tCheckWorld, "world", &s_tFIFOin,DEQUEUE_BYTE);
+            check_string_init(&s_tCheckWorld, &s_tCheckWorldCFG);
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
@@ -181,9 +182,10 @@ static fsm_rt_t print_hello(void)
         WAIT_PRINT,
         PRINT_HELLO
     } s_tState = START;
+    static print_str_cfg_t s_tPrintStringCFG={START,"hello",&s_tFIFOout,FN_ENQUEUE_BYTE};
     switch (s_tState) {
         case START:
-            print_string_init(&s_tPrintString, "hello", &s_tFIFOout,ENQUEUE_BYTE);
+            print_string_init(&s_tPrintString,&s_tPrintStringCFG);
             s_tState = WAIT_PRINT;
             // break;
         case WAIT_PRINT:

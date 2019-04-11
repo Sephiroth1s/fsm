@@ -13,30 +13,29 @@
         this.chState = START; \
     } while (0)
 
-bool print_string_init(print_str_t *ptPRN, uint8_t *pchString, byte_queue_t *ptFIFOout, enqueue_byte_t *fnEnqueue)
+bool print_string_init(print_str_t *ptThis,print_str_cfg_t *ptCFG)
 {
     enum {
         START
     };
-    if ((NULL == ptPRN) || (NULL == pchString) || (NULL == ptFIFOout) || (NULL == fnEnqueue)) {
+    if ((NULL==ptThis)||(NULL==ptCFG)){
         return false;
     }
-    ptPRN->pchString = pchString;
-    ptPRN->ptFIFOout = ptFIFOout;
-    ptPRN->chState = 0;
-    ptPRN->fnEnqueue = fnEnqueue;
+    this.chState=ptCFG->chState;
+    this.pchString=ptCFG->pchString;
+    this.ptFIFOout=ptCFG->ptFIFOout;
+    this.fnEnqueue=ptCFG->fnEnqueue;
     return true;
 }
 
-fsm_rt_t print_string(print_str_t *ptPRN)
+fsm_rt_t print_string(print_str_t *ptThis)
 {
     enum {
         START,
         PRINT_CHECK,
         PRINT_STR
     };
-    print_str_t *ptThis = ptPRN;
-    if (ptPRN == NULL) {
+    if (NULL==ptThis) {
         return fsm_rt_err;
     }
     switch (this.chState) {

@@ -13,22 +13,22 @@
         this.chState = START; \
     } while (0)
 
-bool check_string_init(check_str_t *ptCHK, uint8_t *pchString, byte_queue_t *ptFIFOin, dequeue_byte_t *fndequeue)
+bool check_string_init(check_str_t *ptThis, check_str_cfg_t *ptCFG)
 {
     enum {
         START
     };
-    if ((NULL == ptCHK) || (NULL == pchString) || (NULL == ptFIFOin) || (NULL == fndequeue)) {
+    if ((NULL == ptThis) || (NULL == ptCFG)) {
         return false;
     }
-    ptCHK->pchString = pchString;
-    ptCHK->chState = START;
-    ptCHK->ptFIFOin = ptFIFOin;
-    ptCHK->fnDequeue = fndequeue;
+    this.chState = ptCFG->chState;
+    this.pchString = ptCFG->pchString;
+    this.ptFIFOin = ptCFG->ptFIFOin;
+    this.fnDequeue = ptCFG->fnDequeue;
     return true;
 }
 
-fsm_rt_t check_string(check_str_t *ptCHK)
+fsm_rt_t check_string(check_str_t *ptThis)
 {
     enum {
         START,
@@ -36,8 +36,8 @@ fsm_rt_t check_string(check_str_t *ptCHK)
         READ_CHAR,
         CHECK_WORLD
     };
-    check_str_t *ptThis = ptCHK;
-    if (ptThis == NULL) {
+
+    if (NULL == ptThis) {
         return fsm_rt_err;
     }
     switch (this.chState) {
