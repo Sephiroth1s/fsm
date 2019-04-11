@@ -154,10 +154,10 @@ static fsm_rt_t check_world(void)
         START,
         CHECK_STRING
     } s_tState = START;
-    static check_str_cfg_t s_tCheckWorldCFG = {START,"world", &s_tFIFOin, FN_DEQUEUE_BYTE};
+    check_str_cfg_t tCheckWorldCFG = {START,"world", &s_tFIFOin, FN_DEQUEUE_BYTE};
     switch (s_tState) {
         case START:
-            check_string_init(&s_tCheckWorld, &s_tCheckWorldCFG);
+            check_string_init(&s_tCheckWorld, &tCheckWorldCFG);
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
@@ -182,10 +182,10 @@ static fsm_rt_t print_hello(void)
         WAIT_PRINT,
         PRINT_HELLO
     } s_tState = START;
-    static print_str_cfg_t s_tPrintStringCFG={START,"hello",&s_tFIFOout,FN_ENQUEUE_BYTE};
+    print_str_cfg_t tPrintStringCFG={START,"hello",&s_tFIFOout,FN_ENQUEUE_BYTE};
     switch (s_tState) {
         case START:
-            print_string_init(&s_tPrintString,&s_tPrintStringCFG);
+            print_string_init(&s_tPrintString,&tPrintStringCFG);
             s_tState = WAIT_PRINT;
             // break;
         case WAIT_PRINT:
