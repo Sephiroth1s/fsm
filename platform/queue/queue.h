@@ -1,7 +1,6 @@
 #include "app_cfg.h"
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
-#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 
