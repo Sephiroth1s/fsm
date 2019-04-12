@@ -7,22 +7,21 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef bool enqueue_byte_t(byte_queue_t *, uint8_t);
+typedef bool print_byte_t(void *, uint8_t);
 
 typedef struct {
     uint8_t chState;
     uint8_t *pchString;
-    byte_queue_t *ptFIFOout;
-    enqueue_byte_t *fnEnqueue;
+    void *ptUserDate;
+    print_byte_t *fnPrintByte;
 } print_str_t;
 
 typedef struct {
-    uint8_t chState;
     uint8_t *pchString;
-    byte_queue_t *ptFIFOout;
-    enqueue_byte_t *fnEnqueue;
+    void *ptUserDate;
+    print_byte_t *fnPrintByte;
 } print_str_cfg_t;
 
 extern fsm_rt_t print_string(print_str_t *ptThis);
-extern bool print_string_init(print_str_t *ptThis,print_str_cfg_t *ptCFG);
+extern bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG);
 #endif

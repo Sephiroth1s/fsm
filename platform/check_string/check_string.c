@@ -13,7 +13,7 @@
         this.chState = START; \
     } while (0)
 
-bool check_string_init(check_str_t *ptThis, check_str_cfg_t *ptCFG)
+bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG)
 {
     enum {
         START
@@ -21,10 +21,10 @@ bool check_string_init(check_str_t *ptThis, check_str_cfg_t *ptCFG)
     if ((NULL == ptThis) || (NULL == ptCFG)) {
         return false;
     }
-    this.chState = ptCFG->chState;
+    this.chState = START;
     this.pchString = ptCFG->pchString;
-    this.ptFIFOin = ptCFG->ptFIFOin;
-    this.fnDequeue = ptCFG->fnDequeue;
+    this.ptUserDate = ptCFG->ptUserDate;
+    this.fnReadByte = ptCFG->fnReadByte;
     return true;
 }
 
@@ -51,9 +51,11 @@ fsm_rt_t check_string(check_str_t *ptThis)
             } else {
                 this.chState = READ_CHAR;
             }
+            serial_out("1");
             // break;
         case READ_CHAR:
-            if ((*this.fnDequeue)(this.ptFIFOin, &this.chCurrentByte)) {
+            if ((*this.fnReadByte)(this.ptUserDate, &this.chCurrentByte)) {
+                serial_out("2");
                 this.chState = CHECK_WORLD;
                 // break;
             } else {

@@ -13,18 +13,18 @@
         this.chState = START; \
     } while (0)
 
-bool print_string_init(print_str_t *ptThis,print_str_cfg_t *ptCFG)
+bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
 {
     enum {
         START
     };
-    if ((NULL==ptThis)||(NULL==ptCFG)){
+    if ((NULL == ptThis) || (NULL == ptCFG)) {
         return false;
     }
-    this.chState=ptCFG->chState;
-    this.pchString=ptCFG->pchString;
-    this.ptFIFOout=ptCFG->ptFIFOout;
-    this.fnEnqueue=ptCFG->fnEnqueue;
+    this.chState = START;
+    this.pchString = ptCFG->pchString;
+    this.ptUserDate = ptCFG->ptUserDate;
+    this.fnPrintByte = ptCFG->fnPrintByte;
     return true;
 }
 
@@ -35,7 +35,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
         PRINT_CHECK,
         PRINT_STR
     };
-    if (NULL==ptThis) {
+    if (NULL == ptThis) {
         return fsm_rt_err;
     }
     switch (this.chState) {
@@ -51,7 +51,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
             }
             // break;
         case PRINT_STR:
-            if ((*this.fnEnqueue)(this.ptFIFOout, *this.pchString)) {
+            if ((*this.fnPrintByte)(this.fnPrintByte, *this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }

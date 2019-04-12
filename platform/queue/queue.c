@@ -3,8 +3,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #define this (*ptThis)
-bool enqueue_byte( byte_queue_t* ptThis,uint8_t chByte)
+bool enqueue_byte( void* pEnqueueByte,uint8_t chByte)
 {
+    byte_queue_t*ptThis=(byte_queue_t*)pEnqueueByte;
     if ((ptThis == NULL)||(is_byte_queue_full(ptThis))) {
         return false;
     }
@@ -18,8 +19,9 @@ bool enqueue_byte( byte_queue_t* ptThis,uint8_t chByte)
     
 }
 
-bool dequeue_byte(byte_queue_t* ptThis,uint8_t* pchByte)
+bool dequeue_byte(void* pDequeueByte,uint8_t* pchByte)
 {
+    byte_queue_t*ptThis=(byte_queue_t*)pDequeueByte;
     if ((ptThis == NULL)||(is_byte_queue_empty(ptThis))) {
         return false;
     }

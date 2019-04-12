@@ -18,8 +18,8 @@ typedef struct {
     uint16_t hwLength;
 } byte_queue_t;
 
-extern bool enqueue_byte(byte_queue_t* ptThis, uint8_t pchByte);
-extern bool dequeue_byte(byte_queue_t* ptThis, uint8_t* pchByte);
+extern bool enqueue_byte(void* pEnqueueByte, uint8_t pchByte);
+extern bool dequeue_byte(void* pDequeueByte, uint8_t* pchByte);
 extern bool is_byte_queue_empty(byte_queue_t* ptThis);
 extern bool is_byte_queue_full(byte_queue_t* ptThis);
 extern bool init_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte,uint16_t hwSize);
