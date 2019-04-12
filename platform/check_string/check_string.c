@@ -1,11 +1,10 @@
 
 #include "app_cfg.h"
 #include "check_string.h"
+#include "../utilities/arm/app_type.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "../queue/queue.h"
-#include "../utilities/arm/app_type.h"
 
 #define this (*ptThis)
 #define TASK_STR_RESET_FSM()  \
@@ -23,7 +22,7 @@ bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG)
     }
     this.chState = START;
     this.pchString = ptCFG->pchString;
-    this.ptUserDate = ptCFG->ptUserDate;
+    this.pTarget = ptCFG->pTarget;
     this.fnReadByte = ptCFG->fnReadByte;
     return true;
 }
@@ -53,7 +52,7 @@ fsm_rt_t check_string(check_str_t *ptThis)
             }
             // break;
         case READ_CHAR:
-            if ((*this.fnReadByte)(this.ptUserDate, &this.chCurrentByte)) {
+            if ((*this.fnReadByte)(this.pTarget, &this.chCurrentByte)) {
                 this.chState = CHECK_WORLD;
                 // break;
             } else {

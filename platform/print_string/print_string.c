@@ -1,7 +1,6 @@
 
 #include "app_cfg.h"
 #include "print_string.h"
-#include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -23,7 +22,7 @@ bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
     }
     this.chState = START;
     this.pchString = ptCFG->pchString;
-    this.ptUserDate = ptCFG->ptUserDate;
+    this.pTarget = ptCFG->pTarget;
     this.fnPrintByte = ptCFG->fnPrintByte;
     return true;
 }
@@ -51,7 +50,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
             }
             // break;
         case PRINT_STR:
-            if ((*this.fnPrintByte)(this.ptUserDate, *this.pchString)) {
+            if ((*this.fnPrintByte)(this.pTarget, *this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }

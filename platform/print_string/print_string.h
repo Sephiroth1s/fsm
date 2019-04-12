@@ -1,7 +1,6 @@
 #include "app_cfg.h"
 #ifndef __PRINT_STRING_H__
 #define __PRINT_STRING_H__
-#include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -12,13 +11,13 @@ typedef bool print_byte_t(void *, uint8_t);
 typedef struct {
     uint8_t chState;
     uint8_t *pchString;
-    void *ptUserDate;
+    void *pTarget;
     print_byte_t *fnPrintByte;
 } print_str_t;
 
 typedef struct {
     uint8_t *pchString;
-    void *ptUserDate;
+    void *pTarget;
     print_byte_t *fnPrintByte;
 } print_str_cfg_t;
 

@@ -1,7 +1,6 @@
 #include "app_cfg.h"
 #ifndef __CHECK_STRING_H__
 #define __CHECK_STRING_H__
-#include "../queue/queue.h"
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -13,13 +12,13 @@ typedef struct {
     uint8_t chState;
     uint8_t chCurrentByte;
     uint8_t *pchString;
-    void *ptUserDate;
+    void *pTarget;
     read_byte_t *fnReadByte;
 } check_str_t;
 
 typedef struct {
     uint8_t *pchString;
-    void *ptUserDate;
+    void *pTarget;
     read_byte_t *fnReadByte;
 } check_str_cfg_t;
 
