@@ -51,7 +51,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
             }
             // break;
         case PRINT_STR:
-            if ((*this.fnPrintByte)(this.fnPrintByte, *this.pchString)) {
+            if ((*this.fnPrintByte)(this.ptUserDate, *this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }

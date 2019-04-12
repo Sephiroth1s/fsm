@@ -51,11 +51,9 @@ fsm_rt_t check_string(check_str_t *ptThis)
             } else {
                 this.chState = READ_CHAR;
             }
-            serial_out("1");
             // break;
         case READ_CHAR:
             if ((*this.fnReadByte)(this.ptUserDate, &this.chCurrentByte)) {
-                serial_out("2");
                 this.chState = CHECK_WORLD;
                 // break;
             } else {
