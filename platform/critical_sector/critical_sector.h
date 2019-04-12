@@ -1,7 +1,7 @@
 #include "app_cfg.h"
 #ifndef __CRITICAL_SECTOR_H__
 #define __CRITICAL_SECTOR_H__
-#include <stddef.h>
+
 #include <stdbool.h>
 
 #define ENTER_CRITICAL_SECTOR(__CRITICAL) (enter_critical_sector(__CRITICAL))

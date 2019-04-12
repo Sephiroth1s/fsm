@@ -1,8 +1,11 @@
 
 #include "app_cfg.h"
 #include "critical_sector.h"
-#include <stddef.h>
 #include <stdbool.h>
+
+#ifndef NULL
+#define NULL (0)
+#endif
 
 void init_critical_sector(critical_sector_t *ptCritical) 
 {

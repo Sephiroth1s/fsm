@@ -2,7 +2,6 @@
 #ifndef __MAILBOX_H__
 #define __MAILBOX_H__
 #include "event.h"
-#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
     

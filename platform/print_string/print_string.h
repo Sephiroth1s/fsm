@@ -4,8 +4,6 @@
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include <stddef.h>
-
 typedef bool print_byte_t(void *, uint8_t);
 
 typedef struct {

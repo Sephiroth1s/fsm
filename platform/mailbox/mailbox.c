@@ -2,9 +2,11 @@
 #include "app_cfg.h"
 #include "mailbox.h"
 #include "event.h"
-#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
+#ifndef NULL
+#define NULL (0)
+#endif
 
 void init_mail(mailbox_t *ptEcho) 
 {

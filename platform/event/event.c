@@ -1,8 +1,10 @@
-
 #include "app_cfg.h"
 #include "event.h"
-#include <stddef.h>
 #include <stdbool.h>
+
+#ifndef NULL
+#define NULL (0)
+#endif
 
 bool wait_event(event_t *ptEvent) 
 {

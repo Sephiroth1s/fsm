@@ -1,7 +1,6 @@
 #include "app_cfg.h"
 #ifndef __EVENT_H__
 #define __EVENT_H__
-#include <stddef.h>
 #include <stdbool.h>
 
 #define SET_EVENT(__EVENT) set_event(__EVENT)
