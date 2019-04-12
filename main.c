@@ -158,7 +158,11 @@ static fsm_rt_t check_world(void)
     switch (s_tState) {
         case START:
             do {
-                const check_str_cfg_t tCheckWorldCFG = {"world", &s_tFIFOin, FN_DEQUEUE_BYTE};
+                const check_str_cfg_t tCheckWorldCFG = {
+                    "world", 
+                    &s_tFIFOin, 
+                    FN_DEQUEUE_BYTE
+                };
                 check_string_init(&s_tCheckWorld, &tCheckWorldCFG);
             } while (0);
             s_tState = CHECK_STRING;
@@ -189,7 +193,11 @@ static fsm_rt_t print_hello(void)
     switch (s_tState) {
         case START:
             do {
-                const print_str_cfg_t tPrintStringCFG = {"hello", &s_tFIFOout, FN_ENQUEUE_BYTE};
+                const print_str_cfg_t tPrintStringCFG = {
+                    "hello", 
+                    &s_tFIFOout, 
+                    FN_ENQUEUE_BYTE
+                };
                 print_string_init(&s_tPrintString, &tPrintStringCFG);
             } while (0);
             s_tState = WAIT_PRINT;
