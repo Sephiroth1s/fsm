@@ -6,9 +6,11 @@
 /*============================ INCLUDES ======================================*/
 #include "./led/led.h"
 #include "./uart/uart.h"
+#include "./event/event.h"
 #include "./queue/queue.h"
 #include "./check_string/check_string.h"
 #include "./print_string/print_string.h"
+#include "./utilities/arm/app_type.h"
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
