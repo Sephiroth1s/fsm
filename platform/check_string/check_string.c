@@ -38,13 +38,10 @@ fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop)
     if (NULL == ptThis) {
         return fsm_rt_err;
     }
-    if(false==*pbIsRequestDrop){
-        return true;
-    }
 
     switch (this.chState) {
         case START:
-            *pbIsRequestDrop=false;
+            *pbIsRequestDrop=true;
             this.chState = CHECK_END;
             // break;
         case CHECK_END:

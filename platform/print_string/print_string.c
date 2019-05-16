@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #define this (*ptThis)
+
 #define TASK_STR_RESET_FSM()  \
     do {                      \
         this.chState = START; \

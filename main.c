@@ -108,14 +108,14 @@ static fsm_rt_t task_check(void)
 {
     static enum {
         START,
-        CHECK_WORLD
+        CHECK_HELLO
     } s_tState = START;
     switch (s_tState) {
         case START:
-            s_tState = CHECK_WORLD;
+            s_tState = CHECK_HELLO;
             // break;
-        case CHECK_WORLD:
-            if (fsm_rt_cpl == check_world()) {
+        case CHECK_HELLO:
+            if (fsm_rt_cpl == task_check_use_peek()) {
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -138,40 +138,6 @@ static fsm_rt_t task_print(void)
             // break;
         case PRINT_HELLO:
             if (fsm_rt_cpl == print_hello()) {
-                TASK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}
-
-static fsm_rt_t check_world(void)
-{
-    static check_str_t s_tCheckWorld;
-    static enum {
-        START,
-        CHECK_STRING
-    } s_tState = START;
-
-    switch (s_tState) {
-        case START:
-            do {
-                const check_str_cfg_t tCheckWorldCFG = {
-                    "world", 
-                    &s_tFIFOin, 
-                    FN_DEQUEUE_BYTE
-                };
-                check_string_init(&s_tCheckWorld, &tCheckWorldCFG);
-            } while (0);
-            s_tState = CHECK_STRING;
-            // break;
-        case CHECK_STRING:
-            if (fsm_rt_cpl == check_string(&s_tCheckWorld,true)) {
-                SET_EVENT(&s_tPrint);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -231,7 +197,8 @@ fsm_rt_t task_check_use_peek(void)
         START,
         CHECK_STRING
     } s_tState = START;
-
+    static bool bIsRequestDrop;
+    uint8_t chByteDrop;
     switch (s_tState) {
         case START:
             do {
@@ -245,7 +212,8 @@ fsm_rt_t task_check_use_peek(void)
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            if (fsm_rt_cpl == check_string(&s_tCheckHello,false)) {
+            if (fsm_rt_cpl == check_string(&s_tCheckHello,&bIsRequestDrop)) {
+                GET_ALL_PEEKED_BYTE(s_tCheckHello.pTarget);
                 SET_EVENT(&s_tPrint);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -255,7 +223,10 @@ fsm_rt_t task_check_use_peek(void)
             return fsm_rt_err;
             break;
     }
+    if(bIsRequestDrop){
+        DEQUEUE_BYTE(s_tCheckHello.pTarget,&chByteDrop);
+        RESET_PEEK_BYTE(s_tCheckHello.pTarget); 
+    } 
     return fsm_rt_on_going;
 }
-
 
