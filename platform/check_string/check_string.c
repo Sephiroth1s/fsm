@@ -26,7 +26,7 @@ bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG)
     return true;
 }
 
-fsm_rt_t check_string(check_str_t *ptThis)
+fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop)
 {
     enum {
         START,
@@ -38,8 +38,13 @@ fsm_rt_t check_string(check_str_t *ptThis)
     if (NULL == ptThis) {
         return fsm_rt_err;
     }
+    if(false==*pbIsRequestDrop){
+        return true;
+    }
+
     switch (this.chState) {
         case START:
+            *pbIsRequestDrop=false;
             this.chState = CHECK_END;
             // break;
         case CHECK_END:

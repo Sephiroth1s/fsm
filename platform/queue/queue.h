@@ -18,6 +18,7 @@ typedef struct {
     uint16_t hwTail;
     uint16_t hwPeek;
     uint16_t hwLength;
+    uint16_t hwPeekLength;
 } byte_queue_t;
 
 extern bool enqueue_byte(void* pEnqueueByte, uint8_t pchByte);
@@ -28,6 +29,7 @@ extern bool init_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte, uint16_t hwS
 extern bool peek_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte);
 extern bool reset_peek_byte(byte_queue_t* ptThis);
 extern bool get_all_peek_byte(byte_queue_t* ptThis);
+extern bool is_peek_byte_queue_empty(byte_queue_t* ptThis);
 
 
 #endif

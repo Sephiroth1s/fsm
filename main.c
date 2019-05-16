@@ -11,6 +11,7 @@
 #define SIZE 100
 #define FN_ENQUEUE_BYTE enqueue_byte
 #define FN_DEQUEUE_BYTE dequeue_byte
+#define FN_PEEK_BYTE_QUEUE peek_byte_queue
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
@@ -33,6 +34,7 @@ static fsm_rt_t task_check(void);
 static fsm_rt_t task_print(void);
 static fsm_rt_t serial_in_task(void);
 static fsm_rt_t serial_task_out(void);
+static fsm_rt_t task_check_use_peek(void);
 int main(void)
 {
     platform_init();
@@ -168,7 +170,7 @@ static fsm_rt_t check_world(void)
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            if (fsm_rt_cpl == check_string(&s_tCheckWorld)) {
+            if (fsm_rt_cpl == check_string(&s_tCheckWorld,true)) {
                 SET_EVENT(&s_tPrint);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -221,3 +223,39 @@ static fsm_rt_t print_hello(void)
     }
     return fsm_rt_on_going;
 }
+
+fsm_rt_t task_check_use_peek(void)
+{
+    static check_str_t s_tCheckHello;
+    static enum {
+        START,
+        CHECK_STRING
+    } s_tState = START;
+
+    switch (s_tState) {
+        case START:
+            do {
+                const check_str_cfg_t tCheckHelloCFG = {
+                    "hello", 
+                    &s_tFIFOin, 
+                    FN_PEEK_BYTE_QUEUE
+                };
+                check_string_init(&s_tCheckHello, &tCheckHelloCFG);
+            } while (0);
+            s_tState = CHECK_STRING;
+            // break;
+        case CHECK_STRING:
+            if (fsm_rt_cpl == check_string(&s_tCheckHello,false)) {
+                SET_EVENT(&s_tPrint);
+                TASK_RESET_FSM();
+                return fsm_rt_cpl;
+            }
+            break;
+        default:
+            return fsm_rt_err;
+            break;
+    }
+    return fsm_rt_on_going;
+}
+
+

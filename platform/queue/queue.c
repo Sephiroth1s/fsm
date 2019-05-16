@@ -70,35 +70,50 @@ bool init_byte_queue(byte_queue_t* ptThis, uint8_t* pchBuffer, uint16_t hwSize)
     this.hwSize = hwSize;
     this.hwLength = 0;
     this.hwPeek = this.hwHead;
+    this.hwPeekLength=this.hwLength;
     return true;
 }
+
 bool peek_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte)
 {
-    if ((NULL == ptThis) || (NULL == pchByte) || (is_byte_queue_empty(ptThis))) {
+    if ((NULL == ptThis) || (NULL == pchByte) || (is_peek_byte_queue_empty(ptThis))) {
         return false;
     }
     *pchByte = this.pchBuffer[this.hwPeek];
     this.hwPeek++;
-    if (this.hwPeek == this.hwTail) {
-        return false;
+    if(this.hwPeek>=this.hwSize){
+        this.hwPeek=0;
     }
+    this.hwPeekLength--;
     return true;
 }
+
 bool reset_peek_byte(byte_queue_t* ptThis)
 {
     if (NULL == ptThis) {
         return false;
     }
-    this.hwHead = this.hwHead;
+    this.hwPeek = this.hwHead;
+    this.hwPeekLength=this.hwPeekLength;
     return true;
 }
+
 bool get_all_peek_byte(byte_queue_t* ptThis)
 {
     if ((ptThis == NULL) || (is_byte_queue_empty(ptThis))) {
         return false;
     }
-    this.hwHead++;
-    if (this.hwHead == this.hwPeek) {
+    this.hwHead=this.hwPeek;
+    this.hwLength=this.hwPeekLength;
+    return true;
+}
+
+bool is_peek_byte_queue_empty(byte_queue_t* ptThis)
+{
+    if (ptThis == NULL) {
+        return false;
+    }
+    if ((this.hwTail == this.hwPeek) && !(this.hwPeekLength)) {
         return true;
     }
     return false;
