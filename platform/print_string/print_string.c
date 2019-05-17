@@ -12,6 +12,20 @@
         this.chState = START; \
     } while (0)
 
+#ifndef FN_ENQUEUE_BYTE
+#error No defined macro FN_ENQUEUE_BYTE for print_string
+#endif
+
+#ifndef FN_DEQUEUE_BYTE
+#error No defined macro FN_DEQUEUE_BYTE for print_string
+#endif
+
+#ifndef FN_PEEK_BYTE_QUEUE
+#warning No defined macro FN_PEEK_BYTE_QUEUE for print_string, default value peek_byte_queue?is?used.
+#define FN_PEEK_BYTE_QUEUE peek_byte_queue
+#endif
+
+
 bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
 {
     enum {

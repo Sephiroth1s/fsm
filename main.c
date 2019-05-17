@@ -218,14 +218,15 @@ fsm_rt_t task_check_use_peek(void)
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
+            if(bIsRequestDrop){
+                DEQUEUE_BYTE(s_tCheckHello.pTarget,&chByteDrop);
+            } 
             break;
         default:
             return fsm_rt_err;
             break;
     }
-    if(bIsRequestDrop){
-        DEQUEUE_BYTE(s_tCheckHello.pTarget,&chByteDrop);//出队内部包含更新reset peek
-    } 
+    
     return fsm_rt_on_going;
 }
 
