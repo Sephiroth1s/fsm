@@ -28,12 +28,12 @@ static byte_queue_t s_tFIFOin, s_tFIFOout;
  * @retval None
  */
 
-static fsm_rt_t print_hello(void);
+static fsm_rt_t task_print_world(void);
 static fsm_rt_t check_world(void);
 static fsm_rt_t task_check(void);
 static fsm_rt_t task_print(void);
 static fsm_rt_t serial_in_task(void);
-static fsm_rt_t serial_task_out(void);
+static fsm_rt_t serial_out_task(void);
 static fsm_rt_t task_check_use_peek(void);
 int main(void)
 {
@@ -47,7 +47,7 @@ int main(void)
         task_check();
         task_print();
         serial_in_task();
-        serial_task_out();
+        serial_out_task();
     }
 }
 fsm_rt_t serial_in_task(void)
@@ -73,7 +73,7 @@ fsm_rt_t serial_in_task(void)
     }
     return fsm_rt_on_going;
 }
-fsm_rt_t serial_task_out(void)
+fsm_rt_t serial_out_task(void)
 {
     static enum {
         START,
@@ -130,14 +130,14 @@ static fsm_rt_t task_print(void)
 {
     static enum {
         START,
-        PRINT_HELLO
+        PRINT_WORLD
     } s_tState = START;
     switch (s_tState) {
         case START:
             s_tState = START;
             // break;
-        case PRINT_HELLO:
-            if (fsm_rt_cpl == print_hello()) {
+        case PRINT_WORLD:
+            if (fsm_rt_cpl == task_print_world()) {
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -149,20 +149,20 @@ static fsm_rt_t task_print(void)
     return fsm_rt_on_going;
 }
 
-static fsm_rt_t print_hello(void)
+static fsm_rt_t task_print_world(void)
 {
     static print_str_t s_tPrintString;
     static enum {
         START,
         WAIT_PRINT,
-        PRINT_HELLO
+        PRINT_WORLD
     } s_tState = START;
 
     switch (s_tState) {
         case START:
             do {
                 const print_str_cfg_t tPrintStringCFG = {
-                    "hello", 
+                    "world\r\n", 
                     &s_tFIFOout, 
                     FN_ENQUEUE_BYTE
                 };
@@ -172,12 +172,12 @@ static fsm_rt_t print_hello(void)
             // break;
         case WAIT_PRINT:
             if (WAIT_EVENT(&s_tPrint)) {
-                s_tState = PRINT_HELLO;
+                s_tState = PRINT_WORLD;
                 // break;
             } else {
                 break;
             }
-        case PRINT_HELLO:
+        case PRINT_WORLD:
             if (fsm_rt_cpl == print_string(&s_tPrintString)) {
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -224,8 +224,7 @@ fsm_rt_t task_check_use_peek(void)
             break;
     }
     if(bIsRequestDrop){
-        DEQUEUE_BYTE(s_tCheckHello.pTarget,&chByteDrop);
-        RESET_PEEK_BYTE(s_tCheckHello.pTarget); 
+        DEQUEUE_BYTE(s_tCheckHello.pTarget,&chByteDrop);//出队内部包含更新reset peek
     } 
     return fsm_rt_on_going;
 }
