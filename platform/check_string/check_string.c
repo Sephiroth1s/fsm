@@ -4,7 +4,6 @@
 #include "../utilities/arm/app_type.h"
 #include <stdbool.h>
 #include <stdint.h>
-
 #define this (*ptThis)
 #define TASK_STR_RESET_FSM()  \
     do {                      \

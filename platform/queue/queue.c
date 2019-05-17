@@ -94,7 +94,7 @@ bool reset_peek_byte(byte_queue_t* ptThis)
         return false;
     }
     this.hwPeek = this.hwHead;
-    this.hwPeekLength=this.hwPeekLength;
+    this.hwPeekLength=this.hwLength;
     return true;
 }
 

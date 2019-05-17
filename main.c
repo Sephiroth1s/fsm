@@ -9,9 +9,6 @@
         s_tState = START; \
     } while (0)
 #define SIZE 100
-#define FN_ENQUEUE_BYTE enqueue_byte
-#define FN_DEQUEUE_BYTE dequeue_byte
-#define FN_PEEK_BYTE_QUEUE peek_byte_queue
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
@@ -179,6 +176,7 @@ static fsm_rt_t task_print_world(void)
             }
         case PRINT_WORLD:
             if (fsm_rt_cpl == print_string(&s_tPrintString)) {
+                RESET_EVENT(&s_tPrint);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
