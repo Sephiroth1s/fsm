@@ -69,9 +69,9 @@ dkms.conf
 *.uvguix.*
 build/mdk/fsm/
 build/mdk/DebugConfig/
-!*.uvoptx
-!*.uvprojx
-
+*.uvoptx
+*.uvprojx
+RTE_Components.h
 # Visio
 *.vsd
 *.~vsd

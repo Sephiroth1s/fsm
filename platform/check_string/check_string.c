@@ -39,10 +39,10 @@ fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop)
     }
     switch (this.chState) {
         case START:
-            *pbIsRequestDrop=false;
             this.chState = CHECK_END;
             // break;
         case CHECK_END:
+            CHECK_END:
             if (*this.pchString == '\0') {
                 TASK_STR_RESET_FSM();
                 return fsm_rt_cpl;
@@ -60,8 +60,11 @@ fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop)
         case CHECK_WORLD:
             if (*this.pchString == this.chCurrentByte) {
                 this.pchString++;
+                *pbIsRequestDrop=false;
                 this.chState = CHECK_END;
+                goto CHECK_END;
             } else {
+                *pbIsRequestDrop=true;
                 TASK_STR_RESET_FSM();
             }
             break;

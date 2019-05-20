@@ -8,14 +8,19 @@
     do {                  \
         s_tState = START; \
     } while (0)
-#define SIZE 100
+#define INPUT_FIFO_SIZE 100
+#define OUTPUT_FIFO_SIZE 100
+
+#define FN_ENQUEUE_BYTE enqueue_byte
+#define FN_DEQUEUE_BYTE dequeue_byte
+#define FN_PEEK_BYTE_QUEUE peek_byte_queue
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrint;
-static uint8_t s_chBytein[SIZE];
-static uint8_t s_chByteout[SIZE];
+static uint8_t s_chBytein[INPUT_FIFO_SIZE];
+static uint8_t s_chByteout[OUTPUT_FIFO_SIZE];
 static byte_queue_t s_tFIFOin, s_tFIFOout;
 /*============================ PROTOTYPES ====================================*/
 
@@ -36,8 +41,8 @@ int main(void)
 {
     platform_init();
     INIT_EVENT(&s_tPrint, false, false);
-    INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, SIZE);
-    INIT_BYTE_QUEUE(&s_tFIFOout, s_chByteout, SIZE);
+    INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, sizeof(s_chBytein));
+    INIT_BYTE_QUEUE(&s_tFIFOout, s_chByteout, sizeof(s_chByteout));
     LED1_OFF();
     while (1) {
         breath_led();
@@ -47,6 +52,7 @@ int main(void)
         serial_out_task();
     }
 }
+
 fsm_rt_t serial_in_task(void)
 {
     static enum {
@@ -70,6 +76,7 @@ fsm_rt_t serial_in_task(void)
     }
     return fsm_rt_on_going;
 }
+
 fsm_rt_t serial_out_task(void)
 {
     static enum {
@@ -101,6 +108,7 @@ fsm_rt_t serial_out_task(void)
     }
     return fsm_rt_on_going;
 }
+
 static fsm_rt_t task_check(void)
 {
     static enum {
@@ -123,6 +131,7 @@ static fsm_rt_t task_check(void)
     }
     return fsm_rt_on_going;
 }
+
 static fsm_rt_t task_print(void)
 {
     static enum {
@@ -158,12 +167,12 @@ static fsm_rt_t task_print_world(void)
     switch (s_tState) {
         case START:
             do {
-                const print_str_cfg_t tPrintStringCFG = {
+                const print_str_cfg_t c_tCFG = {
                     "world\r\n", 
                     &s_tFIFOout, 
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(&s_tPrintString, &tPrintStringCFG);
+                print_string_init(&s_tPrintString, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -191,34 +200,37 @@ static fsm_rt_t task_print_world(void)
 fsm_rt_t task_check_use_peek(void)
 {
     static check_str_t s_tCheckHello;
+    uint8_t chSubState;
     static enum {
         START,
         CHECK_STRING
     } s_tState = START;
-    static bool bIsRequestDrop;
+    static bool bIsRequestDrop=true;
     uint8_t chByteDrop;
     switch (s_tState) {
         case START:
             do {
-                const check_str_cfg_t tCheckHelloCFG = {
+                const check_str_cfg_t c_tCFG = {
                     "hello", 
                     &s_tFIFOin, 
                     FN_PEEK_BYTE_QUEUE
                 };
-                check_string_init(&s_tCheckHello, &tCheckHelloCFG);
+                check_string_init(&s_tCheckHello, &c_tCFG);
             } while (0);
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            if (fsm_rt_cpl == check_string(&s_tCheckHello,&bIsRequestDrop)) {
+            chSubState = check_string(&s_tCheckHello, &bIsRequestDrop);
+            if (fsm_rt_cpl == chSubState) {
                 GET_ALL_PEEKED_BYTE(s_tCheckHello.pTarget);
                 SET_EVENT(&s_tPrint);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
+            } else if (fsm_rt_on_going == chSubState) {
+                if (bIsRequestDrop) {
+                    DEQUEUE_BYTE(s_tCheckHello.pTarget, &chByteDrop);
+                }
             }
-            if(bIsRequestDrop){
-                DEQUEUE_BYTE(s_tCheckHello.pTarget,&chByteDrop);
-            } 
             break;
         default:
             return fsm_rt_err;
