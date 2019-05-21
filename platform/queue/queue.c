@@ -17,7 +17,6 @@ bool enqueue_byte(void* pEnqueueByte, uint8_t chByte)
         this.hwTail = 0;
     }
     this.hwLength++;
-    reset_peek_byte(ptThis);
     return true;
 }
 
@@ -33,7 +32,6 @@ bool dequeue_byte(void* pDequeueByte, uint8_t* pchByte)
         this.hwHead = 0;
     }
     this.hwLength--;
-    reset_peek_byte(ptThis);
     return true;
 }
 

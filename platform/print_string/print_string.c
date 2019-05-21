@@ -19,7 +19,7 @@
 bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
 {
     enum {
-        START
+        START=0
     };
     if ((NULL == ptThis) || (NULL == ptCFG)) {
         return false;
@@ -27,14 +27,13 @@ bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
     this.chState = START;
     this.pchString = ptCFG->pchString;
     this.pTarget = ptCFG->pTarget;
-    this.fnPrintByte = ptCFG->fnPrintByte;
     return true;
 }
 
 fsm_rt_t print_string(print_str_t *ptThis)
 {
     enum {
-        START,
+        START = 0,
         PRINT_CHECK,
         PRINT_STR
     };
@@ -46,7 +45,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
             this.chState = PRINT_CHECK;
             // break;
         case PRINT_CHECK:
-            if (*this.pchString == '\0') {
+            if ('\0' == *this.pchString) {
                 TASK_STR_RESET_FSM();
                 return fsm_rt_cpl;
             } else {
@@ -54,7 +53,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
             }
             // break;
         case PRINT_STR:
-            if ((*this.fnPrintByte)(this.pTarget, *this.pchString)) {
+            if (PRINT_STR_OUTPUT_BYTE(*this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }

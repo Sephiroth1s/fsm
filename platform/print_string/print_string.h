@@ -11,13 +11,11 @@ typedef struct {
     uint8_t chState;
     uint8_t *pchString;
     void *pTarget;
-    print_byte_t *fnPrintByte;
 } print_str_t;
 
 typedef struct {
     uint8_t *pchString;
     void *pTarget;
-    print_byte_t *fnPrintByte;
 } print_str_cfg_t;
 
 extern fsm_rt_t print_string(print_str_t *ptThis);
