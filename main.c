@@ -184,6 +184,7 @@ fsm_rt_t task_check_use_peek(void)
         case CHECK_STRING:
             bIsRequestDrop=false;
             chSubState = check_string(&s_tCheckHello, &bIsRequestDrop);
+            RESET_PEEK_BYTE(s_tCheckHello.pTarget);
             if (fsm_rt_cpl == chSubState) {
                 GET_ALL_PEEKED_BYTE(s_tCheckHello.pTarget);
                 SET_EVENT(&s_tPrint);
@@ -200,7 +201,6 @@ fsm_rt_t task_check_use_peek(void)
             return fsm_rt_err;
             break;
     }
-    
     return fsm_rt_on_going;
 }
 
