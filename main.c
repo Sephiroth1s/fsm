@@ -17,9 +17,10 @@
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
-static event_t s_tPrintWorld,s_tPrintApple,s_tPrintOrange;
+static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
 static uint8_t s_chBytein[INPUT_FIFO_SIZE];
 static byte_queue_t s_tFIFOin, s_tFIFOout;
+static critical_sector_t s_tPrintCriticalSector;
 /*============================ PROTOTYPES ====================================*/
 
 /**
@@ -45,6 +46,7 @@ static fsm_rt_t task_check_use_peek(void);
 int main(void)
 {
     platform_init();
+    INIT_CRITICAL_SECTOR(&s_tPrintCriticalSector);
     INIT_EVENT(&s_tPrintWorld, false, false);
     INIT_EVENT(&s_tPrintApple, false, false);
     INIT_EVENT(&s_tPrintOrange, false, false);
@@ -119,8 +121,8 @@ static fsm_rt_t task_world(void)
         case START:
             do {
                 const print_str_cfg_t c_tCFG = {
-                    "world\r\n", 
-                    &s_tFIFOout, 
+                    "world\r\n",
+                    &s_tFIFOout,
                 };
                 print_string_init(&s_tPrintString, &c_tCFG);
             } while (0);
@@ -128,14 +130,15 @@ static fsm_rt_t task_world(void)
             // break;
         case WAIT_PRINT:
             if (WAIT_EVENT(&s_tPrintWorld)) {
-                s_tState = PRINT_WORLD;
-                // break;
-            } else {
-                break;
+                if (ENTER_CRITICAL_SECTOR(&s_tPrintCriticalSector)) {
+                    s_tState = PRINT_WORLD;
+                }
             }
+            break;
         case PRINT_WORLD:
             if (fsm_rt_cpl == print_string(&s_tPrintString)) {
                 RESET_EVENT(&s_tPrintWorld);
+                LEAVE_CRITICAL_SECTOR(&s_tPrintCriticalSector);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -183,8 +186,8 @@ static fsm_rt_t task_apple(void)
         case START:
             do {
                 const print_str_cfg_t c_tCFG = {
-                    "apple\r\n", 
-                    &s_tFIFOout, 
+                    "apple\r\n",
+                    &s_tFIFOout,
                 };
                 print_string_init(&s_tPrintString, &c_tCFG);
             } while (0);
@@ -192,14 +195,15 @@ static fsm_rt_t task_apple(void)
             // break;
         case WAIT_PRINT:
             if (WAIT_EVENT(&s_tPrintApple)) {
-                s_tState = PRINT_APPLE;
-                // break;
-            } else {
-                break;
-            }
+                if (ENTER_CRITICAL_SECTOR(&s_tPrintCriticalSector)) {
+                    s_tState = PRINT_APPLE;
+                }
+           }
+           break;
         case PRINT_APPLE:
             if (fsm_rt_cpl == print_string(&s_tPrintString)) {
                 RESET_EVENT(&s_tPrintApple);
+                LEAVE_CRITICAL_SECTOR(&s_tPrintCriticalSector);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -247,8 +251,8 @@ static fsm_rt_t task_orange(void)
         case START:
             do {
                 const print_str_cfg_t c_tCFG = {
-                    "orange\r\n", 
-                    &s_tFIFOout, 
+                    "orange\r\n",
+                    &s_tFIFOout,
                 };
                 print_string_init(&s_tPrintString, &c_tCFG);
             } while (0);
@@ -256,14 +260,15 @@ static fsm_rt_t task_orange(void)
             // break;
         case WAIT_PRINT:
             if (WAIT_EVENT(&s_tPrintOrange)) {
-                s_tState = PRINT_ORANGE;
-                // break;
-            } else {
-                break;
+                if (ENTER_CRITICAL_SECTOR(&s_tPrintCriticalSector)) {
+                    s_tState = PRINT_ORANGE;
+                }
             }
+            break;
         case PRINT_ORANGE:
             if (fsm_rt_cpl == print_string(&s_tPrintString)) {
                 RESET_EVENT(&s_tPrintOrange);
+                LEAVE_CRITICAL_SECTOR(&s_tPrintCriticalSector);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -283,9 +288,9 @@ static fsm_rt_t task_check_use_peek(void)
         CHECK_APPLE,
         CHECK_ORANGE
     } s_tState = START;
-    static bool bIsRequestDropHello=false;
-    static bool bIsRequestDropApple=false;
-    static bool bIsRequestDropOrange=false;
+    static bool bIsRequestDropHello = false;
+    static bool bIsRequestDropApple = false;
+    static bool bIsRequestDropOrange = false;
     uint8_t chByteDrop;
     switch (s_tState) {
         case START:
@@ -297,7 +302,7 @@ static fsm_rt_t task_check_use_peek(void)
                 RESET_PEEK_BYTE(&s_tFIFOin);
             }
             s_tState = CHECK_HELLO;
-            //break;
+            break;
         case CHECK_HELLO:
             if (fsm_rt_cpl == check_hello(&s_tFIFOin, &bIsRequestDropHello)) {
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
@@ -306,7 +311,7 @@ static fsm_rt_t task_check_use_peek(void)
             }
             RESET_PEEK_BYTE(&s_tFIFOin);
             s_tState = CHECK_APPLE;
-            //break;
+            break;
         case CHECK_APPLE:
             if (fsm_rt_cpl == check_apple(&s_tFIFOin, &bIsRequestDropApple)) {
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
@@ -315,7 +320,7 @@ static fsm_rt_t task_check_use_peek(void)
             }
             RESET_PEEK_BYTE(&s_tFIFOin);
             s_tState = CHECK_ORANGE;
-            //break;
+            break;
         case CHECK_ORANGE:
             if (fsm_rt_cpl == check_orange(&s_tFIFOin, &bIsRequestDropOrange)) {
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
@@ -344,16 +349,15 @@ fsm_rt_t check_hello(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
-                    "hello", 
-                    ptQueue, 
-                    FN_PEEK_BYTE_QUEUE
-                };
+                    "hello",
+                    ptQueue,
+                    FN_PEEK_BYTE_QUEUE};
                 check_string_init(&s_tCheckHello, &c_tCFG);
             } while (0);
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbIsRequestDrop=false;
+            *pbIsRequestDrop = false;
             chSubState = check_string(&s_tCheckHello, pbIsRequestDrop);
             RESET_PEEK_BYTE(s_tCheckHello.pTarget);
             if (fsm_rt_cpl == chSubState) {
@@ -381,16 +385,15 @@ fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
-                    "apple", 
-                    ptQueue, 
-                    FN_PEEK_BYTE_QUEUE
-                };
+                    "apple",
+                    ptQueue,
+                    FN_PEEK_BYTE_QUEUE};
                 check_string_init(&s_tCheckApple, &c_tCFG);
             } while (0);
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbIsRequestDrop=false;
+            *pbIsRequestDrop = false;
             chSubState = check_string(&s_tCheckApple, pbIsRequestDrop);
             RESET_PEEK_BYTE(s_tCheckApple.pTarget);
             if (fsm_rt_cpl == chSubState) {
@@ -418,16 +421,15 @@ fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
-                    "orange", 
-                    ptQueue, 
-                    FN_PEEK_BYTE_QUEUE
-                };
+                    "orange",
+                    ptQueue,
+                    FN_PEEK_BYTE_QUEUE};
                 check_string_init(&s_tCheckOrange, &c_tCFG);
             } while (0);
             s_tState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbIsRequestDrop=false;
+            *pbIsRequestDrop = false;
             chSubState = check_string(&s_tCheckOrange, pbIsRequestDrop);
             RESET_PEEK_BYTE(s_tCheckOrange.pTarget);
             if (fsm_rt_cpl == chSubState) {
@@ -442,4 +444,3 @@ fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
     }
     return fsm_rt_on_going;
 }
-

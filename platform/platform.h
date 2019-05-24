@@ -7,6 +7,7 @@
 #include "./led/led.h"
 #include "./uart/uart.h"
 #include "./event/event.h"
+#include "./critical_sector/critical_sector.h"
 #include "./queue/queue.h"
 #include "./check_string/check_string.h"
 #include "./print_string/print_string.h"
