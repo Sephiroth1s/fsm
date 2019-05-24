@@ -12,8 +12,8 @@
         this.chState = START; \
     } while (0)
 
-#ifndef PRINT_STR_OUTPUT_BYTE(__BYTE) 
-#error No defined macro PRINT_STR_OUTPUT_BYTE(__BYTE) for serial_out(__BYTE)
+#ifndef PRINT_STR_OUTPUT_BYTE(__TARGET,__BYTE)
+#error No defined macro PRINT_STR_OUTPUT_BYTE(__TARGET,__BYTE) for ((*this.fnPrintByte)(__TARGET, __BYTE))
 #endif
 
 bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
@@ -54,7 +54,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
             }
             // break;
         case PRINT_STR:
-            if ((*this.fnPrintByte)(this.pTarget, *this.pchString)) {
+            if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }
