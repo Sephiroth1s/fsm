@@ -12,8 +12,8 @@
         this.chState = START; \
     } while (0)
 
-#ifndef PRINT_STR_OUTPUT_BYTE(__TARGET,__BYTE)
-#error No defined macro PRINT_STR_OUTPUT_BYTE(__TARGET,__BYTE) for ((*this.fnPrintByte)(__TARGET, __BYTE))
+#ifndef PRINT_STR_OUTPUT_BYTE
+#error No defined macro PRINT_STR_OUTPUT_BYTE(__BYTE) for output byte, please define one with prototype bool (*)(uint8_t chByte);
 #endif
 
 bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)

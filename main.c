@@ -322,32 +322,33 @@ static fsm_rt_t task_check_use_peek(void)
         CHECK_APPLE,
         CHECK_ORANGE
     } s_tState = START;
-    static bool bIsRequestDropHello=false;
-    static bool bIsRequestDropApple=false;
-    static bool bIsRequestDropOrange=false;
+    static uint8_t s_chVoteDropCount = 0;
+    bool bIsRequestDrop = false;
     uint8_t chByteDrop;
     switch (s_tState) {
         case START:
-            s_tState = DROP;
-            // break;
-        case DROP:
-            if (bIsRequestDropHello && bIsRequestDropApple && bIsRequestDropOrange) {
-                DEQUEUE_BYTE(&s_tFIFOin, &chByteDrop);
-                RESET_PEEK_BYTE(&s_tFIFOin);
-            }
             s_tState = CHECK_HELLO;
-            //break;
+            // break;
         case CHECK_HELLO:
-            if (fsm_rt_cpl == check_hello(&s_tFIFOin, &bIsRequestDropHello)) {
+            if (fsm_rt_cpl == check_hello(&s_tFIFOin, &bIsRequestDrop)) {
+                if (bIsRequestDrop) {
+                    s_chVoteDropCount++;
+                }
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
+            }
+            if (bIsRequestDrop) {
+                s_chVoteDropCount++;
             }
             RESET_PEEK_BYTE(&s_tFIFOin);
             s_tState = CHECK_APPLE;
             //break;
         case CHECK_APPLE:
-            if (fsm_rt_cpl == check_apple(&s_tFIFOin, &bIsRequestDropApple)) {
+            if (fsm_rt_cpl == check_apple(&s_tFIFOin, &bIsRequestDrop)) {
+                if (bIsRequestDrop) {
+                    s_chVoteDropCount++;
+                }
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -356,13 +357,23 @@ static fsm_rt_t task_check_use_peek(void)
             s_tState = CHECK_ORANGE;
             //break;
         case CHECK_ORANGE:
-            if (fsm_rt_cpl == check_orange(&s_tFIFOin, &bIsRequestDropOrange)) {
+            if (fsm_rt_cpl == check_orange(&s_tFIFOin, &bIsRequestDrop)) {
+                if (bIsRequestDrop) {
+                    s_chVoteDropCount++;
+                }
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
             RESET_PEEK_BYTE(&s_tFIFOin);
             s_tState = DROP;
+            break;
+        case DROP:
+            if (s_chVoteDropCount >= 3) {
+                DEQUEUE_BYTE(&s_tFIFOin, &chByteDrop);
+                RESET_PEEK_BYTE(&s_tFIFOin);
+            }
+            s_tState = CHECK_HELLO;
             break;
         default:
             return fsm_rt_err;
