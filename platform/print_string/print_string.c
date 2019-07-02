@@ -11,9 +11,14 @@
     do {                      \
         this.chState = START; \
     } while (0)
-
-#ifndef PRINT_STR_OUTPUT_BYTE(__BYTE) 
-#error No defined macro PRINT_STR_OUTPUT_BYTE(__BYTE) for serial_out(__BYTE)
+#ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
+#ifndef PRINT_STR_OUTPUT_BYTE
+#error No defined macro PRINT_STR_OUTPUT_BYTE(__TARGET,__BYTE) for output byte, please define one with prototype bool (*)(void* pTarget,uint8_t chByte);
+#endif
+#else
+#ifndef PRINT_STR_OUTPUT_BYTE
+#error No defined macro PRINT_STR_OUTPUT_BYTE(__BYTE) for output byte, please define one with prototype bool (*)(uint8_t chByte);
+#endif
 #endif
 
 bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
@@ -27,6 +32,9 @@ bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
     this.chState = START;
     this.pchString = ptCFG->pchString;
     this.pTarget = ptCFG->pTarget;
+    #ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
+    this.fnPrintByte = ptCFG->fnPrintByte;
+    #endif 
     return true;
 }
 
@@ -53,10 +61,17 @@ fsm_rt_t print_string(print_str_t *ptThis)
             }
             // break;
         case PRINT_STR:
+            #ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
+            if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
+                this.pchString++;
+                this.chState = PRINT_CHECK;
+            }
+            #else
             if (PRINT_STR_OUTPUT_BYTE(*this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }
+            #endif
             break;
         default:
             return fsm_rt_err;

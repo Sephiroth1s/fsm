@@ -25,7 +25,7 @@ bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG)
     return true;
 }
 
-fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop)
+fsm_rt_t check_string(check_str_t *ptThis, bool *pbIsRequestDrop)
 {
     enum {
         START,
@@ -39,10 +39,11 @@ fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop)
     }
     switch (this.chState) {
         case START:
+            *pbIsRequestDrop = false;
             this.chState = CHECK_END;
             // break;
         case CHECK_END:
-            GOTO_CHECK_END:
+        GOTO_CHECK_END:
             if (*this.pchString == '\0') {
                 TASK_STR_RESET_FSM();
                 return fsm_rt_cpl;
@@ -63,7 +64,7 @@ fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop)
                 this.chState = CHECK_END;
                 goto GOTO_CHECK_END;
             } else {
-                *pbIsRequestDrop=true;
+                *pbIsRequestDrop = true;
                 TASK_STR_RESET_FSM();
             }
             break;
