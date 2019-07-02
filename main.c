@@ -370,6 +370,7 @@ static fsm_rt_t task_check_use_peek(void)
             break;
         case DROP:
             if (s_chVoteDropCount >= 3) {
+                s_chVoteDropCount = 0;
                 DEQUEUE_BYTE(&s_tFIFOin, &chByteDrop);
                 RESET_PEEK_BYTE(&s_tFIFOin);
             }
