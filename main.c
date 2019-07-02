@@ -9,6 +9,7 @@
         s_tState = START; \
     } while (0)
 #define INPUT_FIFO_SIZE 100
+#define OUTPUT_FIFO_SIZE 100
 
 #define FN_ENQUEUE_BYTE enqueue_byte
 #define FN_DEQUEUE_BYTE dequeue_byte
@@ -18,7 +19,7 @@
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
-static uint8_t s_chBytein[INPUT_FIFO_SIZE];
+static uint8_t s_chBytein[INPUT_FIFO_SIZE],s_chByteout[OUTPUT_FIFO_SIZE];;
 static byte_queue_t s_tFIFOin, s_tFIFOout;
 /*============================ PROTOTYPES ====================================*/
 
@@ -41,6 +42,7 @@ static fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *bIsRequestDrop);
 static fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *bIsRequestDrop);
 
 static fsm_rt_t serial_in_task(void);
+static fsm_rt_t serial_out_task(void);
 static fsm_rt_t task_check_use_peek(void);
 int main(void)
 {
@@ -49,6 +51,7 @@ int main(void)
     INIT_EVENT(&s_tPrintApple, false, false);
     INIT_EVENT(&s_tPrintOrange, false, false);
     INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, sizeof(s_chBytein));
+    INIT_BYTE_QUEUE(&s_tFIFOout,s_chByteout,sizeof(s_chByteout));
     LED1_OFF();
     while (1) {
         breath_led();
@@ -57,6 +60,7 @@ int main(void)
         task_print_orange();
         task_check_use_peek();
         serial_in_task();
+        serial_out_task();
     }
 }
 
@@ -84,6 +88,37 @@ fsm_rt_t serial_in_task(void)
     return fsm_rt_on_going;
 }
 
+fsm_rt_t serial_out_task(void)
+{
+    static enum {
+        START,
+        DEQUEUE,
+        SEND_BYTE
+    } s_tState = START;
+    static uint8_t s_chByte;
+    switch (s_tState) {
+        case START:
+            s_tState = START;
+            //break;
+        case DEQUEUE:
+            if (!DEQUEUE_BYTE(&s_tFIFOout, &s_chByte)) {
+                break;
+            } else {
+                s_tState = SEND_BYTE;
+            }
+            //break;
+        case SEND_BYTE:
+            if (serial_out(s_chByte)) {
+                TASK_RESET_FSM();
+                return fsm_rt_cpl;
+            }
+            break;
+        default:
+            return fsm_rt_err;
+            break;
+    }
+    return fsm_rt_on_going;
+}
 static fsm_rt_t task_print_world(void)
 {
     static enum {
@@ -121,6 +156,7 @@ static fsm_rt_t task_world(void)
                 const print_str_cfg_t c_tCFG = {
                     "world\r\n",
                     &s_tFIFOout,
+                    FN_ENQUEUE_BYTE
                 };
                 print_string_init(&s_tPrintString, &c_tCFG);
             } while (0);
@@ -184,7 +220,8 @@ static fsm_rt_t task_apple(void)
             do {
                 const print_str_cfg_t c_tCFG = {
                     "apple\r\n", 
-                    &s_tFIFOout
+                    &s_tFIFOout,
+                    FN_ENQUEUE_BYTE
                 };
                 print_string_init(&s_tPrintString, &c_tCFG);
             } while (0);
@@ -248,7 +285,8 @@ static fsm_rt_t task_orange(void)
             do {
                 const print_str_cfg_t c_tCFG = {
                     "orange\r\n", 
-                    &s_tFIFOout
+                    &s_tFIFOout,
+                    FN_ENQUEUE_BYTE
                 };
                 print_string_init(&s_tPrintString, &c_tCFG);
             } while (0);
