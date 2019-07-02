@@ -181,8 +181,6 @@ static fsm_rt_t task_world(void)
     return fsm_rt_on_going;
 }
 
-
-
 static fsm_rt_t task_print_apple(void)
 {
     static enum {
