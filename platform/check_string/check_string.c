@@ -56,6 +56,7 @@ fsm_rt_t check_string(check_str_t *ptThis, bool *pbIsRequestDrop)
                 this.chState = CHECK_WORLD;
                 // break;
             } else {
+                TASK_STR_RESET_FSM();
                 break;
             }
         case CHECK_WORLD:
