@@ -19,6 +19,7 @@ bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG)
         return false;
     }
     this.chState = START;
+    this.pchOriginStr = ptCFG->pchString;
     this.pchString = ptCFG->pchString;
     this.pTarget = ptCFG->pTarget;
     this.fnReadByte = ptCFG->fnReadByte;
@@ -40,6 +41,7 @@ fsm_rt_t check_string(check_str_t *ptThis, bool *pbIsRequestDrop)
     switch (this.chState) {
         case START:
             *pbIsRequestDrop = false;
+            this.pchString = this.pchOriginStr;
             this.chState = CHECK_END;
             // break;
         case CHECK_END:
@@ -67,8 +69,9 @@ fsm_rt_t check_string(check_str_t *ptThis, bool *pbIsRequestDrop)
             } else {
                 *pbIsRequestDrop = true;
                 TASK_STR_RESET_FSM();
+                break;
             }
-            break;
+            // break;
         default:
             return fsm_rt_err;
             break;

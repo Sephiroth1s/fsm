@@ -2,6 +2,7 @@
 
 /*============================ INCLUDES ======================================*/
 #include "./platform/platform.h"
+#include "platform/queue/queue.h"
 /*============================ MACROS ========================================*/
 #define this (*ptThis)
 #define TASK_RESET_FSM()  \
@@ -272,6 +273,7 @@ static fsm_rt_t task_orange(void)
     }
     return fsm_rt_on_going;
 }
+
 static fsm_rt_t task_check_use_peek(void)
 {
     static enum {
@@ -291,6 +293,7 @@ static fsm_rt_t task_check_use_peek(void)
             s_tState = CHECK_HELLO;
             // break;
         case CHECK_HELLO:
+            RESET_PEEK_BYTE(&s_tFIFOin);
             if (fsm_rt_cpl == check_hello(&s_tFIFOin, &bIsRequestDrop)) {
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
                 TASK_RESET_FSM();
@@ -299,10 +302,11 @@ static fsm_rt_t task_check_use_peek(void)
             if (bIsRequestDrop) {
                 s_chVoteDropCount++;
             }
-            RESET_PEEK_BYTE(&s_tFIFOin);
+            bIsRequestDrop = false;
             s_tState = CHECK_APPLE;
             //break;
         case CHECK_APPLE:
+            RESET_PEEK_BYTE(&s_tFIFOin);
             if (fsm_rt_cpl == check_apple(&s_tFIFOin, &bIsRequestDrop)) {
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
                 TASK_RESET_FSM();
@@ -311,10 +315,11 @@ static fsm_rt_t task_check_use_peek(void)
             if (bIsRequestDrop) {
                 s_chVoteDropCount++;
             }
-            RESET_PEEK_BYTE(&s_tFIFOin);
+            bIsRequestDrop = false;
             s_tState = CHECK_ORANGE;
             //break;
         case CHECK_ORANGE:
+            RESET_PEEK_BYTE(&s_tFIFOin);
             if (fsm_rt_cpl == check_orange(&s_tFIFOin, &bIsRequestDrop)) {
                 GET_ALL_PEEKED_BYTE(&s_tFIFOin);
                 TASK_RESET_FSM();
@@ -323,9 +328,9 @@ static fsm_rt_t task_check_use_peek(void)
             if (bIsRequestDrop) {
                 s_chVoteDropCount++;
             }
-            RESET_PEEK_BYTE(&s_tFIFOin);
+            bIsRequestDrop = false;
             s_tState = DROP;
-            break;
+            //break;
         case DROP:
             if (s_chVoteDropCount >= 3) {
                 DEQUEUE_BYTE(&s_tFIFOin, &chByteDrop);
@@ -364,7 +369,6 @@ fsm_rt_t check_hello(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
         case CHECK_STRING:
             *pbIsRequestDrop=false;
             chSubState = check_string(&s_tCheckHello, pbIsRequestDrop);
-            RESET_PEEK_BYTE(s_tCheckHello.pTarget);
             if (fsm_rt_cpl == chSubState) {
                 SET_EVENT(&s_tPrintWorld);
                 TASK_RESET_FSM();
@@ -400,8 +404,7 @@ fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
             // break;
         case CHECK_STRING:
             *pbIsRequestDrop=false;
-            chSubState = check_string(&s_tCheckApple, pbIsRequestDrop);       
-            RESET_PEEK_BYTE(s_tCheckApple.pTarget);
+            chSubState = check_string(&s_tCheckApple, pbIsRequestDrop);
             if (fsm_rt_cpl == chSubState) {
                 SET_EVENT(&s_tPrintApple);
                 TASK_RESET_FSM();
@@ -438,7 +441,6 @@ fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
         case CHECK_STRING:
             *pbIsRequestDrop=false;
             chSubState = check_string(&s_tCheckOrange, pbIsRequestDrop);
-            RESET_PEEK_BYTE(s_tCheckOrange.pTarget);       
             if (fsm_rt_cpl == chSubState) {
                 SET_EVENT(&s_tPrintOrange);
                 TASK_RESET_FSM();
