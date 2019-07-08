@@ -10,6 +10,7 @@ typedef bool read_byte_t(void *, uint8_t *);
 typedef struct {
     uint8_t chState;
     uint8_t chCurrentByte;
+    uint8_t *pchOriginStr;
     uint8_t *pchString;
     void *pTarget;
     read_byte_t *fnReadByte;
