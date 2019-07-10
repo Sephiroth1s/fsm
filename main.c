@@ -44,8 +44,9 @@ static fsm_rt_t task_orange(void);
 static fsm_rt_t check_hello(byte_queue_t *ptQueue, bool *bIsRequestDrop);
 static fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *bIsRequestDrop);
 static fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *bIsRequestDrop);
-const check_words_agent_t* fnCheckWords[WORDS_NUMBER] = {check_hello, check_apple, check_orange};
-const check_words_cfg_t c_tCheck_Words_CFG = {WORDS_NUMBER, &s_tFIFOin,fnCheckWords};
+
+const check_words_agent_t *fnCheckWords[WORDS_NUMBER] = {check_hello, check_apple, check_orange};
+const check_words_cfg_t c_tCheck_Words_CFG = {WORDS_NUMBER, &s_tFIFOin, fnCheckWords};
 static check_words_t s_tCheck_Words;
 
 static fsm_rt_t serial_in_task(void);

@@ -34,43 +34,43 @@ fsm_rt_t task_check_use_peek(check_words_t *ptThis)
         DROP,
         CHECK_WORDS_NUMBER
     };
-    uint8_t s_chVoteDropCount;
-    uint8_t s_chWordsCount;
+    uint8_t chVoteDropCount;
+    uint8_t chWordsCount;
     bool bIsRequestDrop;
     uint8_t chByteDrop;
     switch (this.chState) {
         case START:
-            s_chVoteDropCount = 0;
-            s_chWordsCount = 0;
+            chVoteDropCount = 0;
+            chWordsCount = 0;
             bIsRequestDrop = false;
             this.chState = CHECK_WORDS;
             // break;
         case CHECK_WORDS:
         GOTO_CHECK_WORDS:
             RESET_PEEK_BYTE(this.pTarget);
-            if (fsm_rt_cpl == (*(&this.fnCheckWords+s_chWordsCount))(this.pTarget, &bIsRequestDrop)) {
+            if (fsm_rt_cpl == (*(this.fnCheckWords)[chWordsCount])(this.pTarget, &bIsRequestDrop)) {
                 GET_ALL_PEEKED_BYTE(this.pTarget);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
-            s_chWordsCount++;
+            chWordsCount++;
             if (bIsRequestDrop) {
-                s_chVoteDropCount++;
+                chVoteDropCount++;
             }
             bIsRequestDrop = false;
             this.chState = DROP;
             //break;
         case DROP:
-            if (s_chVoteDropCount >= this.chWordsNumber) {
+            if (chVoteDropCount >= this.chWordsNumber) {
                 DEQUEUE_BYTE(this.pTarget, &chByteDrop);
                 RESET_PEEK_BYTE(this.pTarget);
-                s_chVoteDropCount = 0;
+                chVoteDropCount = 0;
             }
             this.chState = CHECK_WORDS_NUMBER;
             //break;
         case CHECK_WORDS_NUMBER:
-            if (s_chWordsCount >= this.chWordsNumber) {
-                s_chWordsCount = 0;
+            if (chWordsCount >= this.chWordsNumber) {
+                chWordsCount = 0;
                 TASK_RESET_FSM();
                 break;
             }
