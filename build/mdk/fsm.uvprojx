@@ -335,10 +335,10 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--diag_suppress=111</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\platform\SDK\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy;..\..\platform\SDK\Drivers\CMSIS\Device\ST\STM32F1xx\Include;..\..\platform\SDK\Drivers\CMSIS\Include;..\..\platform\utilities\arm;..\..\platform;..\..\platform\critical_sector;..\..\platform\check_string;..\..\platform\event;..\..\platform\mailbox;..\..\platform\print_string</IncludePath>
+              <IncludePath>..\..\platform\SDK\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy;..\..\platform\SDK\Drivers\CMSIS\Device\ST\STM32F1xx\Include;..\..\platform\SDK\Drivers\CMSIS\Include;..\..\platform\utilities\arm;..\..\platform;..\..\platform\critical_sector;..\..\platform\check_string;..\..\platform\event;..\..\platform\mailbox;..\..\platform\print_string;..\..\platform\queue;..\..\platform\check_use_peek</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -461,6 +461,21 @@
               <FileName>queue.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\platform\queue\queue.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\platform\check_use_peek\app_cfg.h</FilePath>
+            </File>
+            <File>
+              <FileName>check_use_peek.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\platform\check_use_peek\check_use_peek.c</FilePath>
+            </File>
+            <File>
+              <FileName>check_use_peek.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\platform\check_use_peek\check_use_peek.h</FilePath>
             </File>
           </Files>
         </Group>
