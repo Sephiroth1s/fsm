@@ -12,6 +12,7 @@
 #include "./check_string/check_string.h"
 #include "./print_string/print_string.h"
 #include "./utilities/arm/app_type.h"
+#include "./check_use_peek/check_use_peek.h"
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
