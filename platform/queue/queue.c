@@ -86,8 +86,9 @@ bool peek_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte)
     return true;
 }
 
-bool reset_peek_byte(byte_queue_t* ptThis)
+bool reset_peek_byte(void* pPeekQueueByte)
 {
+    byte_queue_t* ptThis = (byte_queue_t*)pPeekQueueByte;
     if (NULL == ptThis) {
         return false;
     }

@@ -8,7 +8,7 @@
 #define DEQUEUE_BYTE(__QUEUE, __ADDR) (dequeue_byte(__QUEUE, __ADDR))
 #define IS_BYTE_QUEUE_EMPTY(__QUEUE) (is_byte_queue_empty(__QUEUE))
 #define INIT_BYTE_QUEUE(__QUEUE, __BUFFER, __SIZE) (init_byte_queue(__QUEUE, __BUFFER, __SIZE))
-#define PEEK_BYTE_QUEUE(__QUEUE, __ADDR) peek_byte_queue(__QUEUE, __ADDR)  //从队列中Peek一个数据
+#define PEEK_BYTE_QUEUE(__QUEUE, __ADDR) peek_byte_queue(__QUEUE, __ADDR)  //从队列中Peek一个数据
 #define RESET_PEEK_BYTE(__QUEUE) reset_peek_byte(__QUEUE)                  //复位Peek指针，从头开始Peek
 #define GET_ALL_PEEKED_BYTE(__QUEUE) get_all_peek_byte(__QUEUE)            //将所有已经Peek出来的数据从队列中删除
 typedef struct {
@@ -27,7 +27,7 @@ extern bool is_byte_queue_empty(byte_queue_t* ptThis);
 extern bool is_byte_queue_full(byte_queue_t* ptThis);
 extern bool init_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte, uint16_t hwSize);
 extern bool peek_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte);
-extern bool reset_peek_byte(byte_queue_t* ptThis);
+extern bool reset_peek_byte(void* pPeekQueueByte);
 extern bool get_all_peek_byte(byte_queue_t* ptThis);
 extern bool is_peek_byte_queue_empty(byte_queue_t* ptThis);
 

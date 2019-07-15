@@ -8,7 +8,7 @@
 #define TASK_STR_RESET_FSM()  \
     do {                      \
         this.chState = START; \
-    } while (0)
+    } while (0);
 
 bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG)
 {

@@ -10,7 +10,7 @@
     do {                  \
         s_tState = START; \
     } while (0)
-#define INPUT_FIFO_SIZE 100
+#define INPUT_FIFO_SIZE 30
 #define OUTPUT_FIFO_SIZE 100
 #define WORDS_NUMBER 3
 
@@ -23,8 +23,8 @@
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
-static uint8_t s_chBytein[INPUT_FIFO_SIZE],s_chByteout[OUTPUT_FIFO_SIZE];;
-static byte_queue_t s_tFIFOin, s_tFIFOout;
+static uint8_t s_chHelloBytein[INPUT_FIFO_SIZE],s_chAppleBytein[INPUT_FIFO_SIZE],s_chOrangeBytein[INPUT_FIFO_SIZE],s_chByteout[OUTPUT_FIFO_SIZE];
+static byte_queue_t s_tHelloFIFOin,s_tAppleFIFOin,s_tOrangeFIFOin, s_tFIFOout;
 /*============================ PROTOTYPES ====================================*/
 
 /**
@@ -45,28 +45,33 @@ static fsm_rt_t check_hello(byte_queue_t *ptQueue, bool *bIsRequestDrop);
 static fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *bIsRequestDrop);
 static fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *bIsRequestDrop);
 
-const check_words_agent_t *fnCheckWords[WORDS_NUMBER] = {check_hello, check_apple, check_orange};
-const check_words_cfg_t c_tCheck_Words_CFG = {WORDS_NUMBER, &s_tFIFOin, fnCheckWords};
-static check_words_t s_tCheck_Words;
+const check_words_agent_t c_tCheckWordsAgent[WORDS_NUMBER] = {
+    {&s_tHelloFIFOin, check_hello},
+    {&s_tAppleFIFOin, check_apple},
+    {&s_tOrangeFIFOin, check_orange}};
+const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, (check_words_agent_t*)c_tCheckWordsAgent};
+static check_use_peek_t s_tCheckWordsUsePeek;
 
 static fsm_rt_t serial_in_task(void);
 static fsm_rt_t serial_out_task(void);
 int main(void)
 {
     platform_init();
-    check_use_peek_init(&s_tCheck_Words,&c_tCheck_Words_CFG);
     INIT_EVENT(&s_tPrintWorld, false, false);
     INIT_EVENT(&s_tPrintApple, false, false);
     INIT_EVENT(&s_tPrintOrange, false, false);
-    INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, sizeof(s_chBytein));
+    INIT_BYTE_QUEUE(&s_tHelloFIFOin, s_chHelloBytein, sizeof(s_chHelloBytein));
+    INIT_BYTE_QUEUE(&s_tAppleFIFOin, s_chAppleBytein, sizeof(s_chAppleBytein));
+    INIT_BYTE_QUEUE(&s_tOrangeFIFOin, s_chOrangeBytein, sizeof(s_chOrangeBytein));
     INIT_BYTE_QUEUE(&s_tFIFOout, s_chByteout, sizeof(s_chByteout));
+    check_use_peek_init(&s_tCheckWordsUsePeek,&c_tCheckWordsUsePeekCFG);
     LED1_OFF();
     while (1) {
         breath_led();
         task_print_world();
         task_print_apple();
         task_print_orange();
-        task_check_use_peek(&s_tCheck_Words);
+        task_check_use_peek(&s_tCheckWordsUsePeek);
         serial_in_task();
         serial_out_task();
     }
@@ -85,7 +90,9 @@ fsm_rt_t serial_in_task(void)
             //break;
         case REDA_AND_ENQUEUE:
             if (serial_in(&chByte)) {
-                ENQUEUE_BYTE(&s_tFIFOin, chByte);
+                ENQUEUE_BYTE(&s_tHelloFIFOin, chByte);
+                ENQUEUE_BYTE(&s_tAppleFIFOin, chByte);
+                ENQUEUE_BYTE(&s_tOrangeFIFOin, chByte);
                 return fsm_rt_cpl;
             }
             break;

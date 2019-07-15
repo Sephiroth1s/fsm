@@ -10,7 +10,7 @@
 #define TASK_STR_RESET_FSM()  \
     do {                      \
         this.chState = START; \
-    } while (0)
+    } while (0);
 #ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
 #ifndef PRINT_STR_OUTPUT_BYTE
 #error No defined macro PRINT_STR_OUTPUT_BYTE(__TARGET,__BYTE) for output byte, please define one with prototype bool (*)(void* pTarget,uint8_t chByte);
