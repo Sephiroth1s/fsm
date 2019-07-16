@@ -16,12 +16,12 @@ typedef struct {
     uint8_t chCurrentByte;
     uint8_t *pchOriginStr;
     uint8_t *pchString;
-    read_byte_evt_handler_t *tReadByteEvent;
+    read_byte_evt_handler_t tReadByteEvent;
 } check_str_t;
 
 typedef struct {
     uint8_t *pchString;
-    read_byte_evt_handler_t *tReadByteEvent;
+    read_byte_evt_handler_t tReadByteEvent;
 } check_str_cfg_t;
 
 extern fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop);

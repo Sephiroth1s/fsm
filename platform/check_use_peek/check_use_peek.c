@@ -35,7 +35,7 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
         DROP,
         CHECK_WORDS_NUMBER
     };
-    read_byte_evt_handler_t *ptReadByte = (read_byte_evt_handler_t *)this.pTarget;
+    read_byte_evt_handler_t tReadByte ={peek_byte_queue,this.pTarget};
     uint8_t chVoteDropCount;
     uint8_t chWordsCount;
     bool bIsRequestDrop;
@@ -49,9 +49,9 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             // break;
         case CHECK_WORDS:
         GOTO_CHECK_WORDS:
-            RESET_PEEK_BYTE(ptReadByte->pTarget);
-            if (fsm_rt_cpl == this.ptAgents[chWordsCount].fnCheckWords(this.ptAgents[chWordsCount].pTarget, ptReadByte, &bIsRequestDrop)) {
-                GET_ALL_PEEKED_BYTE(ptReadByte->pTarget);
+            RESET_PEEK_BYTE(this.pTarget);
+            if (fsm_rt_cpl == this.ptAgents[chWordsCount].fnCheckWords(this.ptAgents[chWordsCount].pTarget, &tReadByte, &bIsRequestDrop)) {
+                GET_ALL_PEEKED_BYTE(this.pTarget);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -63,8 +63,8 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             //break;
         case DROP:
             if (chVoteDropCount >= this.chAgentsNumber) {
-                DEQUEUE_BYTE(ptReadByte->pTarget, &chByteDrop);
-                RESET_PEEK_BYTE(ptReadByte->pTarget);
+                DEQUEUE_BYTE(this.pTarget, &chByteDrop);
+                RESET_PEEK_BYTE(this.pTarget);
                 chVoteDropCount = 0;
             }
             this.chState = CHECK_WORDS_NUMBER;

@@ -73,8 +73,7 @@ static check_agent_t c_tCheckWordsAgent[WORDS_NUMBER] = {
     {&s_tCheckHelloPCB, check_hello},
     {&s_tCheckApplePCB, check_apple},
     {&s_tCheckOrangePCB, check_orange}};
-static read_byte_evt_handler_t s_tReadByte = {FN_PEEK_BYTE_QUEUE,&s_tFIFOin};
-const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, &s_tReadByte, c_tCheckWordsAgent};
+const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, &s_tFIFOin, c_tCheckWordsAgent};
 static check_use_peek_t s_tCheckWordsUsePeek;
 
 static fsm_rt_t serial_in_task(void);
@@ -360,7 +359,7 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
             do {
                 const check_str_cfg_t c_tCFG = {
                     "hello",
-                    ptReadByte
+                    *ptReadByte
                 };
                 check_string_init(&this.tCheckHello, &c_tCFG);
             } while (0);
@@ -393,7 +392,7 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
             do {
                 const check_str_cfg_t c_tCFG = {
                     "apple", 
-                    ptReadByte
+                    *ptReadByte
                 };
                 check_string_init(&this.tCheckApple, &c_tCFG);
             } while (0);
@@ -426,7 +425,7 @@ static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,
             do {
                 const check_str_cfg_t c_tCFG = {
                     "orange", 
-                    ptReadByte
+                    *ptReadByte
                 };
                 check_string_init(&this.tCheckOrange, &c_tCFG);
             } while (0);
