@@ -60,7 +60,7 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             this.chState = DROP;
             //break;
         case DROP:
-            if (chVoteDropCount >= 3) {
+            if (chVoteDropCount >= this.chAgentsNumber) {
                 DEQUEUE_BYTE(待定, &chByteDrop);
                 RESET_PEEK_BYTE(待定);
                 chVoteDropCount = 0;
