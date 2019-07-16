@@ -7,21 +7,22 @@
 #include <stdbool.h>
 #include <stddef.h>
 #define this (*ptThis)
-#define TASK_RESET_FSM()  \
+#define TASK_RESET_FSM()      \
     do {                      \
         this.chState = START; \
     } while (0);
 
-bool check_use_peek_init(check_use_peek_t *ptThis,const check_use_peek_cfg_t *ptCFG)
+bool check_use_peek_init(check_use_peek_t *ptThis, const check_use_peek_cfg_t *ptCFG)
 {
     enum {
         START
     };
-    if ((NULL == ptThis) || (NULL == ptCFG)||(NULL==ptCFG->ptAgents)||(NULL==ptCFG->ptAgents->pTarget)||(NULL==ptCFG->ptAgents->ptCheckWords)) {
+    if ((NULL == ptThis) || (NULL == ptCFG) || (NULL == ptCFG->ptAgents) || (NULL == ptCFG->ptAgents->pTarget) || (NULL == ptCFG->ptAgents->fnCheckWords)) {
         return false;
     }
     this.chState = START;
     this.chAgentsNumber = ptCFG->chAgentsNumber;
+    this.pTarget = ptCFG->pTarget;
     this.ptAgents = ptCFG->ptAgents;
     return true;
 }
@@ -34,6 +35,7 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
         DROP,
         CHECK_WORDS_NUMBER
     };
+    read_byte_evt_handler_t *ptReadByte = (read_byte_evt_handler_t *)this.pTarget;
     uint8_t chVoteDropCount;
     uint8_t chWordsCount;
     bool bIsRequestDrop;
@@ -47,9 +49,9 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             // break;
         case CHECK_WORDS:
         GOTO_CHECK_WORDS:
-            RESET_PEEK_BYTE(待定);
-            if (fsm_rt_cpl == this.ptAgents[chWordsCount].fnCheckWords(this.ptAgents[chWordsCount].pTarget,read_byte_evt_handler_t *ptReadByte,&bIsRequestDrop)) {
-                GET_ALL_PEEKED_BYTE(待定);
+            RESET_PEEK_BYTE(ptReadByte->pTarget);
+            if (fsm_rt_cpl == this.ptAgents[chWordsCount].fnCheckWords(this.ptAgents[chWordsCount].pTarget, ptReadByte, &bIsRequestDrop)) {
+                GET_ALL_PEEKED_BYTE(ptReadByte->pTarget);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -60,9 +62,9 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             this.chState = DROP;
             //break;
         case DROP:
-            if (chVoteDropCount >= 3) {
-                DEQUEUE_BYTE(待定, &chByteDrop);
-                RESET_PEEK_BYTE(待定);
+            if (chVoteDropCount >= this.chAgentsNumber) {
+                DEQUEUE_BYTE(ptReadByte->pTarget, &chByteDrop);
+                RESET_PEEK_BYTE(ptReadByte->pTarget);
                 chVoteDropCount = 0;
             }
             this.chState = CHECK_WORDS_NUMBER;
