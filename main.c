@@ -8,7 +8,7 @@
 #define this (*ptThis)
 #define TASK_RESET_FSM()  \
     do {                  \
-        s_tState = START; \
+        this.chState = START; \
     } while (0)
 #define INPUT_FIFO_SIZE 30
 #define OUTPUT_FIFO_SIZE 100
@@ -20,11 +20,36 @@
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
+typedef struct 
+{
+    uint8_t chState;
+    check_str_t tCheckHello;  
+}check_hello_pcb_t;
+
+typedef struct 
+{
+    uint8_t chState;
+    check_str_t tCheckOrange;  
+}check_orange_pcb_t;
+
+typedef struct 
+{
+    uint8_t chState;
+    check_str_t tCheckApple;
+}check_apple_pcb_t;
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
-static uint8_t s_chHelloBytein[INPUT_FIFO_SIZE],s_chAppleBytein[INPUT_FIFO_SIZE],s_chOrangeBytein[INPUT_FIFO_SIZE],s_chByteout[OUTPUT_FIFO_SIZE];
-static byte_queue_t s_tHelloFIFOin,s_tAppleFIFOin,s_tOrangeFIFOin, s_tFIFOout;
+static uint8_t s_chBytein[INPUT_FIFO_SIZE],s_chByteout[OUTPUT_FIFO_SIZE];
+static byte_queue_t s_tFIFOin, s_tFIFOout;
+
+static read_byte_evt_handler_t s_tReadByteInit = {FN_PEEK_BYTE_QUEUE,&s_tFIFOin};
+static check_str_t s_tCheckHelloInit={.tReadByteEvent=s_tReadByteInit};
+static check_str_t s_tCheckAppleInit={.tReadByteEvent=s_tReadByteInit};
+static check_str_t s_tCheckOrangeInit={.tReadByteEvent=s_tReadByteInit};
+static check_hello_pcb_t s_tCheckHelloPCB={.tCheckHello=s_tCheckHelloInit};
+static check_apple_pcb_t s_tCheckApplePCB={.tCheckApple=s_tCheckAppleInit};
+static check_orange_pcb_t s_tCheckOrangePCB={.tCheckOrange=s_tCheckOrangeInit};
 /*============================ PROTOTYPES ====================================*/
 
 /**
@@ -41,15 +66,15 @@ static fsm_rt_t task_world(void);
 static fsm_rt_t task_apple(void);
 static fsm_rt_t task_orange(void);
 
-static fsm_rt_t check_hello(byte_queue_t *ptQueue, bool *bIsRequestDrop);
-static fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *bIsRequestDrop);
-static fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *bIsRequestDrop);
+static fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
+static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
+static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
 
-const check_words_agent_t c_tCheckWordsAgent[WORDS_NUMBER] = {
-    {&s_tHelloFIFOin, check_hello},
-    {&s_tAppleFIFOin, check_apple},
-    {&s_tOrangeFIFOin, check_orange}};
-const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, (check_words_agent_t*)c_tCheckWordsAgent};
+const check_agent_t c_tCheckWordsAgent[WORDS_NUMBER] = {
+    {&s_tCheckHelloPCB, check_hello},
+    {&s_tCheckApplePCB, check_apple},
+    {&s_tCheckOrangePCB, check_orange}};
+const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, (check_agent_t*)c_tCheckWordsAgent};
 static check_use_peek_t s_tCheckWordsUsePeek;
 
 static fsm_rt_t serial_in_task(void);
@@ -60,9 +85,7 @@ int main(void)
     INIT_EVENT(&s_tPrintWorld, false, false);
     INIT_EVENT(&s_tPrintApple, false, false);
     INIT_EVENT(&s_tPrintOrange, false, false);
-    INIT_BYTE_QUEUE(&s_tHelloFIFOin, s_chHelloBytein, sizeof(s_chHelloBytein));
-    INIT_BYTE_QUEUE(&s_tAppleFIFOin, s_chAppleBytein, sizeof(s_chAppleBytein));
-    INIT_BYTE_QUEUE(&s_tOrangeFIFOin, s_chOrangeBytein, sizeof(s_chOrangeBytein));
+    INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, sizeof(s_chBytein));
     INIT_BYTE_QUEUE(&s_tFIFOout, s_chByteout, sizeof(s_chByteout));
     check_use_peek_init(&s_tCheckWordsUsePeek,&c_tCheckWordsUsePeekCFG);
     LED1_OFF();
@@ -90,9 +113,7 @@ fsm_rt_t serial_in_task(void)
             //break;
         case REDA_AND_ENQUEUE:
             if (serial_in(&chByte)) {
-                ENQUEUE_BYTE(&s_tHelloFIFOin, chByte);
-                ENQUEUE_BYTE(&s_tAppleFIFOin, chByte);
-                ENQUEUE_BYTE(&s_tOrangeFIFOin, chByte);
+                ENQUEUE_BYTE(&s_tFIFOin, chByte);
                 return fsm_rt_cpl;
             }
             break;
@@ -327,30 +348,28 @@ static fsm_rt_t task_orange(void)
     return fsm_rt_on_going;
 }
 
-fsm_rt_t check_hello(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
+fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *pbRequestDrop)
 {
-    static check_str_t s_tCheckHello;
-    uint8_t chSubState;
-    static enum {
+    check_hello_pcb_t *ptThis = (check_hello_pcb_t *)pTarget;
+    // check_str_t *ptCheckHello = (check_str_t *)this.tCheckHello;
+    enum {
         START,
         CHECK_STRING
-    } s_tState = START;
-    switch (s_tState) {
+    };
+    switch (this.chState) {
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
-                    "hello", 
-                    ptQueue, 
-                    FN_PEEK_BYTE_QUEUE
+                    "hello",
+                    ptReadByte
                 };
-                check_string_init(&s_tCheckHello, &c_tCFG);
+                check_string_init(this.tCheckHello, &c_tCFG);
             } while (0);
-            s_tState = CHECK_STRING;
+            this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbIsRequestDrop=false;
-            chSubState = check_string(&s_tCheckHello, pbIsRequestDrop);
-            if (fsm_rt_cpl == chSubState) {
+            *pbIsRequestDrop = false;
+            if (fsm_rt_cpl == check_string(this.tCheckHello, pbRequestDrop)) {
                 SET_EVENT(&s_tPrintWorld);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -363,30 +382,28 @@ fsm_rt_t check_hello(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
     return fsm_rt_on_going;
 }
 
-fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
+static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
-    static check_str_t s_tCheckApple;
-    uint8_t chSubState;
+    check_apple_pcb_t *ptThis=(check_apple_pcb_t *)pTarget;
+    // check_str_t*ptCheckApple=(check_str_t*)this.tCheckApple;
     static enum {
         START,
         CHECK_STRING
-    } s_tState = START;
-    switch (s_tState) {
+    };
+    switch (this.chState) {
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
                     "apple", 
-                    ptQueue, 
-                    FN_PEEK_BYTE_QUEUE
+                    ptReadByte
                 };
-                check_string_init(&s_tCheckApple, &c_tCFG);
+                check_string_init(this.tCheckApple, &c_tCFG);
             } while (0);
-            s_tState = CHECK_STRING;
+            this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
             *pbIsRequestDrop=false;
-            chSubState = check_string(&s_tCheckApple, pbIsRequestDrop);
-            if (fsm_rt_cpl == chSubState) {
+            if (fsm_rt_cpl == check_string(this.tCheckApple, pbIsRequestDrop)) {
                 SET_EVENT(&s_tPrintApple);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -399,29 +416,27 @@ fsm_rt_t check_apple(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
     return fsm_rt_on_going;
 }
 
-fsm_rt_t check_orange(byte_queue_t *ptQueue, bool *pbIsRequestDrop)
+static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
-    static check_str_t s_tCheckOrange;
-    uint8_t chSubState;
+    check_orange_pcb_t* ptThis=(check_orange_pcb_t*)pTarget
     static enum {
         START,
         CHECK_STRING
-    } s_tState = START;
-    switch (s_tState) {
+    } ;
+    switch (this.chState) {
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
                     "orange", 
-                    ptQueue, 
-                    FN_PEEK_BYTE_QUEUE
+                    ptReadByte
                 };
-                check_string_init(&s_tCheckOrange, &c_tCFG);
+                check_string_init(this.tCheckOrange, &c_tCFG);
             } while (0);
-            s_tState = CHECK_STRING;
+            this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
             *pbIsRequestDrop=false;
-            chSubState = check_string(&s_tCheckOrange, pbIsRequestDrop);
+            chSubState = check_string(this.tCheckOrange, pbIsRequestDrop);
             if (fsm_rt_cpl == chSubState) {
                 SET_EVENT(&s_tPrintOrange);
                 TASK_RESET_FSM();

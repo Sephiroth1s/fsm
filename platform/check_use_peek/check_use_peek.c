@@ -1,5 +1,6 @@
 #include "app_cfg.h"
 #include "queue.h"
+#include "check_string.h"
 #include "check_use_peek.h"
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
@@ -16,7 +17,7 @@ bool check_use_peek_init(check_use_peek_t *ptThis,const check_use_peek_cfg_t *pt
     enum {
         START
     };
-    if ((NULL == ptThis) || (NULL == ptCFG)) {
+    if ((NULL == ptThis) || (NULL == ptCFG)||(NULL==ptCFG->ptAgents)||(NULL==ptCFG->ptAgents->pTarget)||(NULL==ptCFG->ptAgents->ptCheckWords)) {
         return false;
     }
     this.chState = START;
@@ -46,9 +47,9 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             // break;
         case CHECK_WORDS:
         GOTO_CHECK_WORDS:
-            RESET_PEEK_BYTE(this.ptAgents[chWordsCount].pTarget);
-            if (fsm_rt_cpl == this.ptAgents[chWordsCount].fnCheckWords(this.ptAgents[chWordsCount].pTarget,&bIsRequestDrop)) {
-                GET_ALL_PEEKED_BYTE(this.ptAgents[chWordsCount].pTarget);
+            RESET_PEEK_BYTE(待定);
+            if (fsm_rt_cpl == this.ptAgents[chWordsCount].fnCheckWords(this.ptAgents[chWordsCount].pTarget,read_byte_evt_handler_t *ptReadByte,&bIsRequestDrop)) {
+                GET_ALL_PEEKED_BYTE(待定);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -59,9 +60,9 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             this.chState = DROP;
             //break;
         case DROP:
-            if (chVoteDropCount >= 1) {
-                DEQUEUE_BYTE(this.ptAgents[chWordsCount].pTarget, &chByteDrop);
-                RESET_PEEK_BYTE(this.ptAgents[chWordsCount].pTarget);
+            if (chVoteDropCount >= 3) {
+                DEQUEUE_BYTE(待定, &chByteDrop);
+                RESET_PEEK_BYTE(待定);
                 chVoteDropCount = 0;
             }
             this.chState = CHECK_WORDS_NUMBER;
