@@ -6,10 +6,15 @@
 #include "./platform/check_use_peek/check_use_peek.h"
 /*============================ MACROS ========================================*/
 #define this (*ptThis)
-#define TASK_RESET_FSM()  \
-    do {                  \
+#define TASK_CHECK_RESET_FSM()      \
+    do {                      \
         this.chState = START; \
     } while (0)
+#define TASK_RESET_FSM()  \
+    do {                  \
+        s_tState = START; \
+    } while (0)
+
 #define INPUT_FIFO_SIZE 30
 #define OUTPUT_FIFO_SIZE 100
 #define WORDS_NUMBER 3
@@ -42,16 +47,10 @@ typedef struct
 static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
 static uint8_t s_chBytein[INPUT_FIFO_SIZE],s_chByteout[OUTPUT_FIFO_SIZE];
 static byte_queue_t s_tFIFOin, s_tFIFOout;
-
-static read_byte_evt_handler_t s_tReadByteInit = {FN_PEEK_BYTE_QUEUE,&s_tFIFOin};
-static check_str_t s_tCheckHelloInit={.tReadByteEvent=s_tReadByteInit};
-static check_str_t s_tCheckAppleInit={.tReadByteEvent=s_tReadByteInit};
-static check_str_t s_tCheckOrangeInit={.tReadByteEvent=s_tReadByteInit};
-static check_hello_pcb_t s_tCheckHelloPCB={.tCheckHello=s_tCheckHelloInit};
-static check_apple_pcb_t s_tCheckApplePCB={.tCheckApple=s_tCheckAppleInit};
-static check_orange_pcb_t s_tCheckOrangePCB={.tCheckOrange=s_tCheckOrangeInit};
+static check_hello_pcb_t s_tCheckHelloPCB;
+static check_apple_pcb_t s_tCheckApplePCB;
+static check_orange_pcb_t s_tCheckOrangePCB;
 /*============================ PROTOTYPES ====================================*/
-
 /**
  * @brief  The application entry point.
  *
@@ -70,11 +69,12 @@ static fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
 static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
 static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
 
-const check_agent_t c_tCheckWordsAgent[WORDS_NUMBER] = {
+static check_agent_t c_tCheckWordsAgent[WORDS_NUMBER] = {
     {&s_tCheckHelloPCB, check_hello},
     {&s_tCheckApplePCB, check_apple},
     {&s_tCheckOrangePCB, check_orange}};
-const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, (check_agent_t*)c_tCheckWordsAgent};
+static read_byte_evt_handler_t s_tReadByte = {FN_PEEK_BYTE_QUEUE,&s_tFIFOin};
+const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, &s_tReadByte, c_tCheckWordsAgent};
 static check_use_peek_t s_tCheckWordsUsePeek;
 
 static fsm_rt_t serial_in_task(void);
@@ -351,7 +351,6 @@ static fsm_rt_t task_orange(void)
 fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *pbRequestDrop)
 {
     check_hello_pcb_t *ptThis = (check_hello_pcb_t *)pTarget;
-    // check_str_t *ptCheckHello = (check_str_t *)this.tCheckHello;
     enum {
         START,
         CHECK_STRING
@@ -363,15 +362,15 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
                     "hello",
                     ptReadByte
                 };
-                check_string_init(this.tCheckHello, &c_tCFG);
+                check_string_init(&this.tCheckHello, &c_tCFG);
             } while (0);
             this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbIsRequestDrop = false;
-            if (fsm_rt_cpl == check_string(this.tCheckHello, pbRequestDrop)) {
+            *pbRequestDrop = false;
+            if (fsm_rt_cpl == check_string(&this.tCheckHello, pbRequestDrop)) {
                 SET_EVENT(&s_tPrintWorld);
-                TASK_RESET_FSM();
+                TASK_CHECK_RESET_FSM();
                 return fsm_rt_cpl;
             }
             break;
@@ -385,7 +384,6 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
 static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
     check_apple_pcb_t *ptThis=(check_apple_pcb_t *)pTarget;
-    // check_str_t*ptCheckApple=(check_str_t*)this.tCheckApple;
     static enum {
         START,
         CHECK_STRING
@@ -397,15 +395,15 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
                     "apple", 
                     ptReadByte
                 };
-                check_string_init(this.tCheckApple, &c_tCFG);
+                check_string_init(&this.tCheckApple, &c_tCFG);
             } while (0);
             this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbIsRequestDrop=false;
-            if (fsm_rt_cpl == check_string(this.tCheckApple, pbIsRequestDrop)) {
+            *pbRequestDrop=false;
+            if (fsm_rt_cpl == check_string(&this.tCheckApple, pbRequestDrop)) {
                 SET_EVENT(&s_tPrintApple);
-                TASK_RESET_FSM();
+                TASK_CHECK_RESET_FSM();
                 return fsm_rt_cpl;
             }
             break;
@@ -418,7 +416,7 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
 
 static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
-    check_orange_pcb_t* ptThis=(check_orange_pcb_t*)pTarget
+    check_orange_pcb_t* ptThis=(check_orange_pcb_t*)pTarget;
     static enum {
         START,
         CHECK_STRING
@@ -430,16 +428,15 @@ static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,
                     "orange", 
                     ptReadByte
                 };
-                check_string_init(this.tCheckOrange, &c_tCFG);
+                check_string_init(&this.tCheckOrange, &c_tCFG);
             } while (0);
             this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbIsRequestDrop=false;
-            chSubState = check_string(this.tCheckOrange, pbIsRequestDrop);
-            if (fsm_rt_cpl == chSubState) {
+            *pbRequestDrop=false;
+            if (fsm_rt_cpl == check_string(&this.tCheckOrange, pbRequestDrop)) {
                 SET_EVENT(&s_tPrintOrange);
-                TASK_RESET_FSM();
+                TASK_CHECK_RESET_FSM();
                 return fsm_rt_cpl;
             }
             break;
