@@ -79,3 +79,25 @@ fsm_rt_t print_string(print_str_t *ptThis)
     }
     return fsm_rt_on_going;
 }
+
+print_str_pool_item_t *print_str_pool_allocate(void)
+{
+    uint8_t chAllocateCounter = 0;
+    while (chAllocateCounter < PRINT_STR_POOL_ITEM_COUNT)
+    {
+        if (s_tPrintStringPool[chAllocateCounter].bIsFree) {
+            s_tPrintStringPool[chAllocateCounter].bIsFree = false;
+            return &s_tPrintStringPool[chAllocateCounter];
+        }
+        chAllocateCounter++;
+    }
+    return NULL;
+}
+
+void print_str_pool_free(print_str_pool_item_t *ptItem)
+{
+    if (ptItem != NULL) {
+        ptItem->bIsFree = true;
+        //ptItem->chBuffer = NULL;
+    }
+}

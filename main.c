@@ -180,21 +180,28 @@ static fsm_rt_t task_print_world(void)
 
 static fsm_rt_t task_world(void)
 {
-    static print_str_t s_tPrintString;
+    static print_str_pool_item_t *s_tPrintString;
     static enum {
         START,
+        INIT,
         WAIT_PRINT,
         PRINT_WORLD
     } s_tState = START;
     switch (s_tState) {
         case START:
+            s_tPrintString==print_str_pool_allocate();
+            if (s_tPrintString==NULL)
+            {
+                TASK_RESET_FSM();
+                break;
+            }
             do {
                 const print_str_cfg_t c_tCFG = {
                     "world\r\n",
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(&s_tPrintString, &c_tCFG);
+                print_string_init(s_tPrintString->chBuffer, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -204,7 +211,8 @@ static fsm_rt_t task_world(void)
             }
             break;
         case PRINT_WORLD:
-            if (fsm_rt_cpl == print_string(&s_tPrintString)) {
+            if (fsm_rt_cpl == print_string(s_tPrintString->chBuffer)) {
+                print_str_pool_free(s_tPrintString);
                 RESET_EVENT(&s_tPrintWorld);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -242,7 +250,7 @@ static fsm_rt_t task_print_apple(void)
 
 static fsm_rt_t task_apple(void)
 {
-    static print_str_t s_tPrintString;
+    static print_str_pool_item_t *s_tPrintString;
     static enum {
         START,
         WAIT_PRINT,
@@ -251,13 +259,19 @@ static fsm_rt_t task_apple(void)
 
     switch (s_tState) {
         case START:
+            s_tPrintString==print_str_pool_allocate();
+            if (s_tPrintString==NULL)
+            {
+                TASK_RESET_FSM();
+                break;
+            }
             do {
                 const print_str_cfg_t c_tCFG = {
                     "apple\r\n", 
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(&s_tPrintString, &c_tCFG);
+                print_string_init(s_tPrintString->chBuffer, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -269,7 +283,8 @@ static fsm_rt_t task_apple(void)
                 break;
             }
         case PRINT_APPLE:
-            if (fsm_rt_cpl == print_string(&s_tPrintString)) {
+            if (fsm_rt_cpl == print_string(s_tPrintString->chBuffer)) {
+                print_str_pool_free(s_tPrintString);
                 RESET_EVENT(&s_tPrintApple);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -307,7 +322,7 @@ static fsm_rt_t task_print_orange(void)
 
 static fsm_rt_t task_orange(void)
 {
-    static print_str_t s_tPrintString;
+    static print_str_pool_item_t* s_tPrintString;
     static enum {
         START,
         WAIT_PRINT,
@@ -316,13 +331,19 @@ static fsm_rt_t task_orange(void)
 
     switch (s_tState) {
         case START:
+            s_tPrintString==print_str_pool_allocate();
+            if (s_tPrintString==NULL)
+            {
+                TASK_RESET_FSM();
+                break;
+            }
             do {
                 const print_str_cfg_t c_tCFG = {
                     "orange\r\n", 
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(&s_tPrintString, &c_tCFG);
+                print_string_init(s_tPrintString->chBuffer, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -334,7 +355,8 @@ static fsm_rt_t task_orange(void)
                 break;
             }
         case PRINT_ORANGE:
-            if (fsm_rt_cpl == print_string(&s_tPrintString)) {
+            if (fsm_rt_cpl == print_string(s_tPrintString->chBuffer)) {
+                print_str_pool_free(s_tPrintString);
                 RESET_EVENT(&s_tPrintOrange);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
