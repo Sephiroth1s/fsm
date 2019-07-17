@@ -49,3 +49,9 @@ bool serial_in(uint8_t *pchByte)
         return false;
     }
 }
+
+int fputc(int ch, FILE *f)
+{
+        while(!serial_out((uint8_t)ch));
+        return ch;
+}

@@ -405,7 +405,7 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
 static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
     check_apple_pcb_t *ptThis=(check_apple_pcb_t *)pTarget;
-    static enum {
+    enum {
         START,
         CHECK_STRING
     };
@@ -438,7 +438,7 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
 static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
     check_orange_pcb_t* ptThis=(check_orange_pcb_t*)pTarget;
-    static enum {
+    enum {
         START,
         CHECK_STRING
     } ;

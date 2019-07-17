@@ -21,11 +21,12 @@
 #endif
 #endif
 
-bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
+bool print_string_init(void *pTarget, const print_str_cfg_t *ptCFG)
 {
     enum {
         START=0
     };
+    print_str_t *ptThis=(print_str_t *)pTarget;
     if ((NULL == ptThis) || (NULL == ptCFG)) {
         return false;
     }
@@ -38,13 +39,14 @@ bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
     return true;
 }
 
-fsm_rt_t print_string(print_str_t *ptThis)
+fsm_rt_t print_string(void *pTarget)
 {
     enum {
         START = 0,
         PRINT_CHECK,
         PRINT_STR
     };
+    print_str_t *ptThis=(print_str_t *)pTarget;
     if (NULL == ptThis) {
         return fsm_rt_err;
     }
@@ -80,6 +82,17 @@ fsm_rt_t print_string(print_str_t *ptThis)
     return fsm_rt_on_going;
 }
 
+void print_str_pool_item_init(void)
+{
+    uint8_t chAllocateCounter = 0;
+    while (chAllocateCounter < PRINT_STR_POOL_ITEM_COUNT) {
+        s_tPrintStringPool[chAllocateCounter].bIsFree = true;
+        memset(s_tPrintStringPool[chAllocateCounter].chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
+        chAllocateCounter++;
+        printf("初始化内存池成功\r\n");
+    }
+}
+
 print_str_pool_item_t *print_str_pool_allocate(void)
 {
     uint8_t chAllocateCounter = 0;
@@ -87,6 +100,7 @@ print_str_pool_item_t *print_str_pool_allocate(void)
     {
         if (s_tPrintStringPool[chAllocateCounter].bIsFree) {
             s_tPrintStringPool[chAllocateCounter].bIsFree = false;
+            printf("分配内存成功\r\n");
             return &s_tPrintStringPool[chAllocateCounter];
         }
         chAllocateCounter++;
@@ -98,6 +112,7 @@ void print_str_pool_free(print_str_pool_item_t *ptItem)
 {
     if (ptItem != NULL) {
         ptItem->bIsFree = true;
-        //ptItem->chBuffer = NULL;
+        memset(ptItem->chBuffer,0,PRINT_STR_POOL_ITEM_SIZE);
+        printf("释放内存\r\n");
     }
 }

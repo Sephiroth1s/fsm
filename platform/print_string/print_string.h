@@ -36,7 +36,8 @@ struct print_str_pool_item_t {
 static print_str_pool_item_t s_tPrintStringPool[PRINT_STR_POOL_ITEM_COUNT];
 print_str_pool_item_t *print_str_pool_allocate(void);
 void print_str_pool_free(print_str_pool_item_t *ptItem);
+extern void print_str_pool_item_init(void);
 
-extern fsm_rt_t print_string(print_str_t *ptThis);
-extern bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG);
+extern fsm_rt_t print_string(void *pTarget);
+extern bool print_string_init(void *pTarget, const print_str_cfg_t *ptCFG);
 #endif
