@@ -25,23 +25,20 @@
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
-typedef struct 
-{
+typedef struct {
     uint8_t chState;
-    check_str_t tCheckHello;  
-}check_hello_pcb_t;
+    check_str_t tCheckHello;
+} check_hello_pcb_t;
 
-typedef struct 
-{
+typedef struct {
     uint8_t chState;
-    check_str_t tCheckOrange;  
-}check_orange_pcb_t;
+    check_str_t tCheckOrange;
+} check_orange_pcb_t;
 
-typedef struct 
-{
+typedef struct {
     uint8_t chState;
     check_str_t tCheckApple;
-}check_apple_pcb_t;
+} check_apple_pcb_t;
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
@@ -73,14 +70,14 @@ static fsm_rt_t serial_in_task(void);
 static fsm_rt_t serial_out_task(void);
 int main(void)
 {
-    const check_agent_t c_tCheckWordsAgent[] = {
-                            {&s_tCheckHelloPCB, check_hello},
-                            {&s_tCheckApplePCB, check_apple},
-                            {&s_tCheckOrangePCB, check_orange}};
-    const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {
-                                    UBOUND(c_tCheckWordsAgent),
-                                    &s_tFIFOin,
-                                    (check_agent_t *)c_tCheckWordsAgent};
+    static const check_agent_t c_tCheckWordsAgent[] = {
+                                {&s_tCheckHelloPCB, check_hello},
+                                {&s_tCheckApplePCB, check_apple},
+                                {&s_tCheckOrangePCB, check_orange}};
+    static const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {
+                                        UBOUND(c_tCheckWordsAgent),
+                                        &s_tFIFOin,
+                                        (check_agent_t *)c_tCheckWordsAgent};
     static check_use_peek_t s_tCheckWordsUsePeek;
     platform_init();
     INIT_EVENT(&s_tPrintWorld, false, false);
