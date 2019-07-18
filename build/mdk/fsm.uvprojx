@@ -338,7 +338,7 @@
               <MiscControls>--diag_suppress=111</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\platform\SDK\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy;..\..\platform\SDK\Drivers\CMSIS\Device\ST\STM32F1xx\Include;..\..\platform\SDK\Drivers\CMSIS\Include;..\..\platform\utilities\arm;..\..\platform;..\..\platform\critical_sector;..\..\platform\check_string;..\..\platform\event;..\..\platform\mailbox;..\..\platform\print_string;..\..\platform\queue;..\..\platform\check_use_peek</IncludePath>
+              <IncludePath>..\..\platform\SDK\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\platform\SDK\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy;..\..\platform\SDK\Drivers\CMSIS\Device\ST\STM32F1xx\Include;..\..\platform\SDK\Drivers\CMSIS\Include;..\..\platform\utilities\arm;..\..\platform;..\..\platform\critical_sector;..\..\platform\check_string;..\..\platform\event;..\..\platform\mailbox;..\..\platform\print_string;..\..\platform\queue;..\..\platform\check_use_peek;..\..\platform\uart</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

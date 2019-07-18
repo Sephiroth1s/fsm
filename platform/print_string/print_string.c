@@ -4,7 +4,7 @@
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "uart.h"
 #define this (*ptThis)
 
 #define TASK_STR_RESET_FSM()  \
@@ -24,7 +24,7 @@
 bool print_string_init(void *pTarget, const print_str_cfg_t *ptCFG)
 {
     enum {
-        START=0
+        START
     };
     print_str_t *ptThis=(print_str_t *)pTarget;
     if ((NULL == ptThis) || (NULL == ptCFG)) {
@@ -42,7 +42,7 @@ bool print_string_init(void *pTarget, const print_str_cfg_t *ptCFG)
 fsm_rt_t print_string(void *pTarget)
 {
     enum {
-        START = 0,
+        START,
         PRINT_CHECK,
         PRINT_STR
     };
@@ -87,23 +87,26 @@ void print_str_pool_item_init(void)
     uint8_t chAllocateCounter = 0;
     while (chAllocateCounter < PRINT_STR_POOL_ITEM_COUNT) {
         s_tPrintStringPool[chAllocateCounter].bIsFree = true;
-        memset(s_tPrintStringPool[chAllocateCounter].chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
         chAllocateCounter++;
-        printf("初始化内存池成功\r\n");
     }
 }
 
 print_str_pool_item_t *print_str_pool_allocate(void)
 {
-    uint8_t chAllocateCounter = 0;
-    while (chAllocateCounter < PRINT_STR_POOL_ITEM_COUNT)
-    {
-        if (s_tPrintStringPool[chAllocateCounter].bIsFree) {
-            s_tPrintStringPool[chAllocateCounter].bIsFree = false;
-            printf("分配内存成功\r\n");
-            return &s_tPrintStringPool[chAllocateCounter];
+    static uint8_t s_chAllocateIndex = 0;
+    if (!s_chAllocateLength) {
+        return NULL;
+    }
+    while (s_chAllocateIndex < PRINT_STR_POOL_ITEM_COUNT) {
+        if (s_tPrintStringPool[s_chAllocateIndex].bIsFree) {
+            s_tPrintStringPool[s_chAllocateIndex].bIsFree = false;
+            s_chAllocateLength--;
+            return &s_tPrintStringPool[s_chAllocateIndex];
         }
-        chAllocateCounter++;
+        s_chAllocateIndex++;
+        if (s_chAllocateIndex >= PRINT_STR_POOL_ITEM_COUNT) {
+            s_chAllocateIndex = 0;
+        }
     }
     return NULL;
 }
@@ -112,7 +115,7 @@ void print_str_pool_free(print_str_pool_item_t *ptItem)
 {
     if (ptItem != NULL) {
         ptItem->bIsFree = true;
-        memset(ptItem->chBuffer,0,PRINT_STR_POOL_ITEM_SIZE);
-        printf("释放内存\r\n");
+        memset(ptItem->chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
+        s_chAllocateLength++;
     }
 }

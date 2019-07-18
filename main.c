@@ -81,6 +81,7 @@ static fsm_rt_t serial_out_task(void);
 int main(void)
 {
     platform_init();
+    print_str_pool_item_init();
     INIT_EVENT(&s_tPrintWorld, false, false);
     INIT_EVENT(&s_tPrintApple, false, false);
     INIT_EVENT(&s_tPrintOrange, false, false);
@@ -180,7 +181,7 @@ static fsm_rt_t task_print_world(void)
 
 static fsm_rt_t task_world(void)
 {
-    static print_str_pool_item_t *s_tPrintString;
+    static print_str_pool_item_t *s_ptPrintString;
     static enum {
         START,
         INIT,
@@ -189,8 +190,11 @@ static fsm_rt_t task_world(void)
     } s_tState = START;
     switch (s_tState) {
         case START:
-            s_tPrintString==print_str_pool_allocate();
-            if (s_tPrintString==NULL)
+            s_tState = INIT;
+            //break;
+        case INIT:
+            s_ptPrintString==print_str_pool_allocate();
+            if (s_ptPrintString==NULL)
             {
                 TASK_RESET_FSM();
                 break;
@@ -201,7 +205,7 @@ static fsm_rt_t task_world(void)
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(s_tPrintString->chBuffer, &c_tCFG);
+                print_string_init(&s_ptPrintString->chBuffer[0], &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -211,8 +215,8 @@ static fsm_rt_t task_world(void)
             }
             break;
         case PRINT_WORLD:
-            if (fsm_rt_cpl == print_string(s_tPrintString->chBuffer)) {
-                print_str_pool_free(s_tPrintString);
+            if (fsm_rt_cpl == print_string(s_ptPrintString->chBuffer)) {
+                print_str_pool_free(s_ptPrintString);
                 RESET_EVENT(&s_tPrintWorld);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -250,17 +254,20 @@ static fsm_rt_t task_print_apple(void)
 
 static fsm_rt_t task_apple(void)
 {
-    static print_str_pool_item_t *s_tPrintString;
+    static print_str_pool_item_t *s_ptPrintString;
     static enum {
         START,
+        INIT,
         WAIT_PRINT,
         PRINT_APPLE
     } s_tState = START;
-
     switch (s_tState) {
         case START:
-            s_tPrintString==print_str_pool_allocate();
-            if (s_tPrintString==NULL)
+            s_tState=INIT;
+            //break;
+        case INIT:
+            s_ptPrintString==print_str_pool_allocate();
+            if (s_ptPrintString==NULL)
             {
                 TASK_RESET_FSM();
                 break;
@@ -271,7 +278,7 @@ static fsm_rt_t task_apple(void)
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(s_tPrintString->chBuffer, &c_tCFG);
+                print_string_init(s_ptPrintString->chBuffer, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -283,8 +290,8 @@ static fsm_rt_t task_apple(void)
                 break;
             }
         case PRINT_APPLE:
-            if (fsm_rt_cpl == print_string(s_tPrintString->chBuffer)) {
-                print_str_pool_free(s_tPrintString);
+            if (fsm_rt_cpl == print_string(s_ptPrintString->chBuffer)) {
+                print_str_pool_free(s_ptPrintString);
                 RESET_EVENT(&s_tPrintApple);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -322,17 +329,21 @@ static fsm_rt_t task_print_orange(void)
 
 static fsm_rt_t task_orange(void)
 {
-    static print_str_pool_item_t* s_tPrintString;
+    static print_str_pool_item_t* s_ptPrintString;
     static enum {
         START,
+        INIT,
         WAIT_PRINT,
         PRINT_ORANGE
     } s_tState = START;
 
     switch (s_tState) {
         case START:
-            s_tPrintString==print_str_pool_allocate();
-            if (s_tPrintString==NULL)
+            s_tState=INIT;
+            //break;
+        case INIT:
+            s_ptPrintString==print_str_pool_allocate();
+            if (s_ptPrintString==NULL)
             {
                 TASK_RESET_FSM();
                 break;
@@ -343,7 +354,7 @@ static fsm_rt_t task_orange(void)
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(s_tPrintString->chBuffer, &c_tCFG);
+                print_string_init(s_ptPrintString->chBuffer, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -355,8 +366,8 @@ static fsm_rt_t task_orange(void)
                 break;
             }
         case PRINT_ORANGE:
-            if (fsm_rt_cpl == print_string(s_tPrintString->chBuffer)) {
-                print_str_pool_free(s_tPrintString);
+            if (fsm_rt_cpl == print_string(s_ptPrintString->chBuffer)) {
+                print_str_pool_free(s_ptPrintString);
                 RESET_EVENT(&s_tPrintOrange);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;

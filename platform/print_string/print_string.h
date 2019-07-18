@@ -34,6 +34,8 @@ struct print_str_pool_item_t {
 };
 
 static print_str_pool_item_t s_tPrintStringPool[PRINT_STR_POOL_ITEM_COUNT];
+static uint8_t s_chAllocateLength = PRINT_STR_POOL_ITEM_COUNT;
+
 print_str_pool_item_t *print_str_pool_allocate(void);
 void print_str_pool_free(print_str_pool_item_t *ptItem);
 extern void print_str_pool_item_init(void);
