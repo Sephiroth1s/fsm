@@ -25,7 +25,7 @@ typedef struct {
     read_byte_evt_handler_t *ptReadByteEvent;
 } check_str_cfg_t;
 
-extern fsm_rt_t check_string(check_str_t *ptThis,bool *pbIsRequestDrop);
+extern fsm_rt_t check_string(check_str_t *ptThis, bool *pbIsRequestDrop);
 extern bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG);
 
 #endif

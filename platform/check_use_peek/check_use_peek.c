@@ -29,8 +29,8 @@ bool check_use_peek_init(check_use_peek_t *ptThis, const check_use_peek_cfg_t *p
     this.chAgentsNumber = ptCFG->chAgentsNumber;
     this.ptQueue = ptCFG->ptQueue;
     this.ptAgents = ptCFG->ptAgents;
-    this.tReadByte.fnReadByte=(read_byte_t*)peek_byte_queue;
-    this.tReadByte.pTarget=ptCFG->ptQueue;
+    this.tReadByte.fnReadByte = (read_byte_t *)&peek_byte_queue;
+    this.tReadByte.pTarget = ptCFG->ptQueue;
     return true;
 }
 
@@ -52,7 +52,10 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
             do {
                 bool bIsRequestDrop = false;
                 RESET_PEEK_BYTE(this.ptQueue);
-                if (fsm_rt_cpl == this.ptAgents[this.chWordsCount].fnCheckWords(this.ptAgents[this.chWordsCount].pTarget,&this.tReadByte, &bIsRequestDrop)) {
+                if (fsm_rt_cpl == this.ptAgents[this.chWordsCount].fnCheckWords(
+                                        this.ptAgents[this.chWordsCount].pTarget,
+                                        &this.tReadByte, 
+                                        &bIsRequestDrop)) {
                     GET_ALL_PEEKED_BYTE(this.ptQueue);
                     TASK_RESET_FSM();
                     return fsm_rt_cpl;
@@ -70,7 +73,7 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
                 this.chWordsCount = 0;
                 this.chState = DROP;
                 //break;
-            } else{
+            } else {
                 this.chState = CHECK_WORDS;
                 break;
             }
