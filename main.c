@@ -359,7 +359,7 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
             do {
                 const check_str_cfg_t c_tCFG = {
                     "hello",
-                    *ptReadByte
+                    ptReadByte
                 };
                 check_string_init(&this.tCheckHello, &c_tCFG);
             } while (0);
@@ -383,7 +383,7 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
 static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
     check_apple_pcb_t *ptThis=(check_apple_pcb_t *)pTarget;
-    static enum {
+    enum {
         START,
         CHECK_STRING
     };
@@ -392,7 +392,7 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
             do {
                 const check_str_cfg_t c_tCFG = {
                     "apple", 
-                    *ptReadByte
+                    ptReadByte
                 };
                 check_string_init(&this.tCheckApple, &c_tCFG);
             } while (0);
@@ -416,16 +416,16 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
 static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
 {
     check_orange_pcb_t* ptThis=(check_orange_pcb_t*)pTarget;
-    static enum {
+    enum {
         START,
         CHECK_STRING
-    } ;
+    };
     switch (this.chState) {
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
                     "orange", 
-                    *ptReadByte
+                    ptReadByte
                 };
                 check_string_init(&this.tCheckOrange, &c_tCFG);
             } while (0);

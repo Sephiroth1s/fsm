@@ -18,13 +18,16 @@ typedef struct
 typedef struct {
     uint8_t chState;
     uint8_t chAgentsNumber;
-    void* pTarget;
+    uint8_t chVoteDropCount;
+    uint8_t chWordsCount;
+    byte_queue_t* pTarget;
+    read_byte_evt_handler_t tReadByte;
     check_agent_t *ptAgents;
 }check_use_peek_t;
 
 typedef struct {
     uint8_t chAgentsNumber;
-    void* pTarget;
+    byte_queue_t* pTarget;
     check_agent_t *ptAgents;
 } check_use_peek_cfg_t;
 

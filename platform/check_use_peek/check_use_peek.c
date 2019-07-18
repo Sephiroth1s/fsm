@@ -35,48 +35,48 @@ fsm_rt_t task_check_use_peek(check_use_peek_t *ptThis)
         DROP,
         CHECK_WORDS_NUMBER
     };
-    read_byte_evt_handler_t tReadByte ={peek_byte_queue,this.pTarget};
-    uint8_t chVoteDropCount;
-    uint8_t chWordsCount;
-    bool bIsRequestDrop;
-    uint8_t chByteDrop;
     switch (this.chState) {
         case START:
-            chVoteDropCount = 0;
-            chWordsCount = 0;
-            bIsRequestDrop = false;
+            this.chVoteDropCount = 0;
+            this.chWordsCount = 0;
             this.chState = CHECK_WORDS;
             // break;
         case CHECK_WORDS:
-        GOTO_CHECK_WORDS:
-            RESET_PEEK_BYTE(this.pTarget);
-            if (fsm_rt_cpl == this.ptAgents[chWordsCount].fnCheckWords(this.ptAgents[chWordsCount].pTarget, &tReadByte, &bIsRequestDrop)) {
-                GET_ALL_PEEKED_BYTE(this.pTarget);
-                TASK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            if (bIsRequestDrop) {
-                chVoteDropCount++;
-            }
-            bIsRequestDrop = false;
+            do {
+                bool bIsRequestDrop = false;
+                this.tReadByte=(read_byte_evt_handler_t){peek_byte_queue,this.pTarget};
+                RESET_PEEK_BYTE(this.pTarget);
+                if (fsm_rt_cpl == this.ptAgents[this.chWordsCount].fnCheckWords(this.ptAgents[this.chWordsCount].pTarget,&this.tReadByte, &bIsRequestDrop)) {
+                    GET_ALL_PEEKED_BYTE(this.pTarget);
+                    TASK_RESET_FSM();
+                    return fsm_rt_cpl;
+                }
+                if (bIsRequestDrop) {
+                    this.chVoteDropCount++;
+                }
+                bIsRequestDrop = false;
+            } while (0);
             this.chState = DROP;
             //break;
         case DROP:
-            if (chVoteDropCount >= this.chAgentsNumber) {
-                DEQUEUE_BYTE(this.pTarget, &chByteDrop);
+            if (this.chVoteDropCount >= this.chAgentsNumber) {
+                do {
+                    uint8_t chByteDrop;
+                    DEQUEUE_BYTE(this.pTarget, &chByteDrop);
+                } while (0);
                 RESET_PEEK_BYTE(this.pTarget);
-                chVoteDropCount = 0;
+                this.chVoteDropCount = 0;
             }
             this.chState = CHECK_WORDS_NUMBER;
             //break;
         case CHECK_WORDS_NUMBER:
-            chWordsCount++;
-            if (chWordsCount >= this.chAgentsNumber) {
-                chWordsCount = 0;
+            this.chWordsCount++;
+            if (this.chWordsCount >= this.chAgentsNumber) {
+                this.chWordsCount = 0;
                 TASK_RESET_FSM();
                 break;
             }
-            goto GOTO_CHECK_WORDS;
+            this.chState = CHECK_WORDS;
         default:
             return fsm_rt_err;
             break;
