@@ -313,7 +313,6 @@ static fsm_rt_t task_orange(void)
         WAIT_PRINT,
         PRINT_ORANGE
     } s_tState = START;
-
     switch (s_tState) {
         case START:
             do {

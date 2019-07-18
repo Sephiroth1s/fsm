@@ -1,4 +1,0 @@
-1、这道题check_string函数里面是否处理GET_ALL_PEEKED_BYTE()以及RESET_PEEK_BYTE()实际上可以作为非常好的降低耦合度的例子。
-对check_string函数来说，所需的不过是一个可以获取字符的函数接口，其原型为bool FETCH_BYTE(uint8_t *pchByte)，调用check_string
-的函数可以根据该函数的返回值（这里的返回值包括直接return的结果和bIsRequestDrop）决定是否调用GET_ALL_PEEKED_BYTE()以及RESET_PEEK_BYTE()。
-也就是说，只要提供了必要的函数，check_string函数就剥离了和队列的关系，既可以用在非队列的环境下，普通队列的环境下，还可以用在应用了高级peek的环境下。
