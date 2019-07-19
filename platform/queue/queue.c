@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "../uart/uart.h"
 #define this (*ptThis)
 
 bool enqueue_byte(void* pEnqueueByte, uint8_t chByte)
@@ -11,6 +12,7 @@ bool enqueue_byte(void* pEnqueueByte, uint8_t chByte)
     if ((ptThis == NULL) || (is_byte_queue_full(ptThis))) {
         return false;
     }
+    while(!serial_out('*'));
     this.pchBuffer[this.hwTail] = chByte;
     this.hwTail++;
     if (this.hwTail >= this.hwSize) {

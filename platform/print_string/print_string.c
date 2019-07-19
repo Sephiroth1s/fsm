@@ -26,10 +26,12 @@ bool print_string_init(void *pTarget, const print_str_cfg_t *ptCFG)
     enum {
         START
     };
+    while (!serial_out('E'));
     print_str_t *ptThis=(print_str_t *)pTarget;
     if ((NULL == ptThis) || (NULL == ptCFG)) {
         return false;
     }
+    while (!serial_out('F'));
     this.chState = START;
     this.pchString = ptCFG->pchString;
     this.pTarget = ptCFG->pTarget;
@@ -48,8 +50,10 @@ fsm_rt_t print_string(void *pTarget)
     };
     print_str_t *ptThis=(print_str_t *)pTarget;
     if (NULL == ptThis) {
+        while (!serial_out('#'));
         return fsm_rt_err;
     }
+    while (!serial_out('Q'));
     switch (this.chState) {
         case START:
             this.chState = PRINT_CHECK;
@@ -63,6 +67,7 @@ fsm_rt_t print_string(void *pTarget)
             }
             // break;
         case PRINT_STR:
+        while (!serial_out('W'));
             #ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
             if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
                 this.pchString++;
@@ -74,6 +79,7 @@ fsm_rt_t print_string(void *pTarget)
                 this.chState = PRINT_CHECK;
             }
             #endif
+            while (!serial_out('E'));
             break;
         default:
             return fsm_rt_err;
