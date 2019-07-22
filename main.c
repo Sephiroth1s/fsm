@@ -3,6 +3,7 @@
 /*============================ INCLUDES ======================================*/
 #include "./platform/platform.h"
 #include "./platform/queue/queue.h"
+#include "./utilities/compiler.h"
 #include "./platform/check_use_peek/check_use_peek.h"
 /*============================ MACROS ========================================*/
 #define this (*ptThis)
@@ -17,28 +18,27 @@
 
 #define INPUT_FIFO_SIZE 30
 #define OUTPUT_FIFO_SIZE 100
-#define WORDS_NUMBER 3
 
-#define FN_ENQUEUE_BYTE enqueue_byte
-#define FN_DEQUEUE_BYTE dequeue_byte
-#define FN_PEEK_BYTE_QUEUE peek_byte_queue
+#define FN_ENQUEUE_BYTE &enqueue_byte
+#define FN_DEQUEUE_BYTE &dequeue_byte
+#define FN_PEEK_BYTE_QUEUE &peek_byte_queue
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 typedef struct {
     uint8_t chState;
-    check_str_t tCheckHello;  
-}check_hello_pcb_t;
+    check_str_t tCheckHello;
+} check_hello_pcb_t;
 
 typedef struct {
     uint8_t chState;
-    check_str_t tCheckOrange;  
-}check_orange_pcb_t;
+    check_str_t tCheckOrange;
+} check_orange_pcb_t;
 
 typedef struct {
     uint8_t chState;
     check_str_t tCheckApple;
-}check_apple_pcb_t;
+} check_apple_pcb_t;
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
@@ -66,17 +66,19 @@ static fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
 static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
 static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
 
-static check_agent_t c_tCheckWordsAgent[WORDS_NUMBER] = {
-    {&s_tCheckHelloPCB, check_hello},
-    {&s_tCheckApplePCB, check_apple},
-    {&s_tCheckOrangePCB, check_orange}};
-const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {WORDS_NUMBER, &s_tFIFOin, c_tCheckWordsAgent};
-static check_use_peek_t s_tCheckWordsUsePeek;
-
 static fsm_rt_t serial_in_task(void);
 static fsm_rt_t serial_out_task(void);
 int main(void)
 {
+    static const check_agent_t c_tCheckWordsAgent[] = {
+                                {&s_tCheckHelloPCB, check_hello},
+                                {&s_tCheckApplePCB, check_apple},
+                                {&s_tCheckOrangePCB, check_orange}};
+    static const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {
+                                        UBOUND(c_tCheckWordsAgent),
+                                        &s_tFIFOin,
+                                        (check_agent_t *)c_tCheckWordsAgent};
+    static check_use_peek_t s_tCheckWordsUsePeek;
     platform_init();
     print_str_pool_item_init();
     INIT_EVENT(&s_tPrintWorld, false, false);
@@ -84,7 +86,7 @@ int main(void)
     INIT_EVENT(&s_tPrintOrange, false, false);
     INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, sizeof(s_chBytein));
     INIT_BYTE_QUEUE(&s_tFIFOout, s_chByteout, sizeof(s_chByteout));
-    check_use_peek_init(&s_tCheckWordsUsePeek,&c_tCheckWordsUsePeekCFG);
+    check_use_peek_init(&s_tCheckWordsUsePeek, &c_tCheckWordsUsePeekCFG);
     LED1_OFF();
     while (1) {
         breath_led();
@@ -344,7 +346,6 @@ static fsm_rt_t task_orange(void)
         WAIT_PRINT,
         PRINT_ORANGE
     } s_tState = START;
-
     switch (s_tState) {
         case START:
             s_tState=INIT;
@@ -400,8 +401,7 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
             do {
                 const check_str_cfg_t c_tCFG = {
                     "hello",
-                    *ptReadByte
-                };
+                    ptReadByte};
                 check_string_init(&this.tCheckHello, &c_tCFG);
             } while (0);
             this.chState = CHECK_STRING;
@@ -433,15 +433,14 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
-                    "apple", 
-                    *ptReadByte
-                };
+                    "apple",
+                    ptReadByte};
                 check_string_init(&this.tCheckApple, &c_tCFG);
             } while (0);
             this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbRequestDrop=false;
+            *pbRequestDrop = false;
             if (fsm_rt_cpl == check_string(&this.tCheckApple, pbRequestDrop)) {
                 SET_EVENT(&s_tPrintApple);
                 TASK_CHECK_RESET_FSM();
@@ -455,26 +454,25 @@ static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte, 
     return fsm_rt_on_going;
 }
 
-static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
+static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *pbRequestDrop)
 {
-    check_orange_pcb_t* ptThis=(check_orange_pcb_t*)pTarget;
+    check_orange_pcb_t *ptThis = (check_orange_pcb_t *)pTarget;
     enum {
         START,
         CHECK_STRING
-    } ;
+    };
     switch (this.chState) {
         case START:
             do {
                 const check_str_cfg_t c_tCFG = {
-                    "orange", 
-                    *ptReadByte
-                };
+                    "orange",
+                    ptReadByte};
                 check_string_init(&this.tCheckOrange, &c_tCFG);
             } while (0);
             this.chState = CHECK_STRING;
             // break;
         case CHECK_STRING:
-            *pbRequestDrop=false;
+            *pbRequestDrop = false;
             if (fsm_rt_cpl == check_string(&this.tCheckOrange, pbRequestDrop)) {
                 SET_EVENT(&s_tPrintOrange);
                 TASK_CHECK_RESET_FSM();

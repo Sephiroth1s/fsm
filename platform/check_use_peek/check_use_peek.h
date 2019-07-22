@@ -7,10 +7,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef fsm_rt_t check_agent_handler_t(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
+typedef fsm_rt_t check_agent_handler_t(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *pbRequestDrop);
 
-typedef struct
-{
+typedef struct {
     void *pTarget;
     check_agent_handler_t *fnCheckWords;
 } check_agent_t;
@@ -18,13 +17,16 @@ typedef struct
 typedef struct {
     uint8_t chState;
     uint8_t chAgentsNumber;
-    void* pTarget;
+    uint8_t chVoteDropCount;
+    uint8_t chWordsCount;
+    byte_queue_t *ptQueue;
+    read_byte_evt_handler_t tReadByte;
     check_agent_t *ptAgents;
-}check_use_peek_t;
+} check_use_peek_t;
 
 typedef struct {
     uint8_t chAgentsNumber;
-    void* pTarget;
+    byte_queue_t *ptQueue;
     check_agent_t *ptAgents;
 } check_use_peek_cfg_t;
 

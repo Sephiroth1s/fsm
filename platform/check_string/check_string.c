@@ -15,13 +15,13 @@ bool check_string_init(check_str_t *ptThis, const check_str_cfg_t *ptCFG)
     enum {
         START
     };
-    if ((NULL == ptThis) || (NULL == ptCFG)||(NULL==ptCFG->tReadByteEvent.fnReadByte)) {
+    if ((NULL == ptThis) || (NULL == ptCFG) || (NULL == ptCFG->ptReadByteEvent->fnReadByte)) {
         return false;
     }
     this.chState = START;
     this.pchOriginStr = ptCFG->pchString;
     this.pchString = ptCFG->pchString;
-    this.tReadByteEvent = ptCFG->tReadByteEvent;
+    this.ptReadByteEvent = ptCFG->ptReadByteEvent;
     return true;
 }
 
@@ -33,7 +33,6 @@ fsm_rt_t check_string(check_str_t *ptThis, bool *pbIsRequestDrop)
         READ_CHAR,
         CHECK_WORLD
     };
-
     if (NULL == ptThis) {
         return fsm_rt_err;
     }
@@ -53,8 +52,7 @@ fsm_rt_t check_string(check_str_t *ptThis, bool *pbIsRequestDrop)
             }
             // break;
         case READ_CHAR:
-            
-            if (this.tReadByteEvent.fnReadByte(this.tReadByteEvent.pTarget, &this.chCurrentByte)) {
+            if (this.ptReadByteEvent->fnReadByte(this.ptReadByteEvent->pTarget, &this.chCurrentByte)) {
                 this.chState = CHECK_WORLD;
                 // break;
             } else {

@@ -30,7 +30,7 @@ bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
         START
     };
     while (!serial_out('E'));
-    if ((NULL == ptThis) || (NULL == ptCFG)||(NULL==ptCFG->fnPrintByte)) {
+    if ((NULL == ptThis) || (NULL == ptCFG) || (NULL == ptCFG->fnPrintByte)) {
         while (!serial_out('='));
         return false;
     }
