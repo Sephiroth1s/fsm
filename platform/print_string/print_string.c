@@ -21,14 +21,17 @@
 #endif
 #endif
 
-bool print_string_init(void *pTarget, const print_str_cfg_t *ptCFG)
+static print_str_pool_item_t s_tPrintStringPool[PRINT_STR_POOL_ITEM_COUNT];
+static uint8_t s_chAllocateLength = PRINT_STR_POOL_ITEM_COUNT;
+
+bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
 {
     enum {
         START
     };
     while (!serial_out('E'));
-    print_str_t *ptThis=(print_str_t *)pTarget;
-    if ((NULL == ptThis) || (NULL == ptCFG)) {
+    if ((NULL == ptThis) || (NULL == ptCFG)||(NULL==ptCFG->fnPrintByte)) {
+        while (!serial_out('='));
         return false;
     }
     while (!serial_out('F'));
@@ -41,14 +44,13 @@ bool print_string_init(void *pTarget, const print_str_cfg_t *ptCFG)
     return true;
 }
 
-fsm_rt_t print_string(void *pTarget)
+fsm_rt_t print_string(print_str_t *ptThis)
 {
     enum {
         START,
         PRINT_CHECK,
         PRINT_STR
     };
-    print_str_t *ptThis=(print_str_t *)pTarget;
     if (NULL == ptThis) {
         while (!serial_out('#'));
         return fsm_rt_err;
@@ -67,12 +69,22 @@ fsm_rt_t print_string(void *pTarget)
             }
             // break;
         case PRINT_STR:
-        while (!serial_out('W'));
+            while (!serial_out('W'));
+            if((this.fnPrintByte==NULL)||(NULL==this.pTarget)){
+                while (!serial_out('^'));
+            }
+            while (!serial_out('['));
             #ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
-            if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
+            if (((*this.fnPrintByte)(this.pTarget, *this.pchString))) {
+                while (!serial_out(']'));
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }
+            // if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
+            //     while (!serial_out(']'));
+            //     this.pchString++;
+            //     this.chState = PRINT_CHECK;
+            // }
             #else
             if (PRINT_STR_OUTPUT_BYTE(*this.pchString)) {
                 this.pchString++;

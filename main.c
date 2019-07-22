@@ -25,20 +25,17 @@
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
-typedef struct 
-{
+typedef struct {
     uint8_t chState;
     check_str_t tCheckHello;  
 }check_hello_pcb_t;
 
-typedef struct 
-{
+typedef struct {
     uint8_t chState;
     check_str_t tCheckOrange;  
 }check_orange_pcb_t;
 
-typedef struct 
-{
+typedef struct {
     uint8_t chState;
     check_str_t tCheckApple;
 }check_apple_pcb_t;
@@ -144,6 +141,7 @@ fsm_rt_t serial_out_task(void)
             }
             //break;
         case SEND_BYTE:
+        while(!serial_out('&'));
             if (serial_out(s_chByte)) {
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -209,7 +207,7 @@ static fsm_rt_t task_world(void)
                     FN_ENQUEUE_BYTE
                 };
                 while (!serial_out('C'));
-                print_string_init((void*)s_ptPrintString->chBuffer, &c_tCFG);
+                print_string_init((print_str_t*)s_ptPrintString->chBuffer, &c_tCFG);
                 while (!serial_out('D'));
             } while (0);
             s_tState = WAIT_PRINT;
@@ -222,7 +220,7 @@ static fsm_rt_t task_world(void)
             break;
         case PRINT_WORLD:
             while (!serial_out('P'));
-            if (fsm_rt_cpl == print_string((void*)s_ptPrintString->chBuffer)) {
+            if (fsm_rt_cpl == print_string((print_str_t*)s_ptPrintString->chBuffer)) {
                 while (!serial_out('+'));
                 print_str_pool_free(s_ptPrintString);
                 while (!serial_out('-'));
@@ -288,7 +286,7 @@ static fsm_rt_t task_apple(void)
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(s_ptPrintString->chBuffer, &c_tCFG);
+                print_string_init((print_str_t*)s_ptPrintString->chBuffer, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -300,7 +298,7 @@ static fsm_rt_t task_apple(void)
                 break;
             }
         case PRINT_APPLE:
-            if (fsm_rt_cpl == print_string(s_ptPrintString->chBuffer)) {
+            if (fsm_rt_cpl == print_string((print_str_t*)s_ptPrintString->chBuffer)) {
                 print_str_pool_free(s_ptPrintString);
                 RESET_EVENT(&s_tPrintApple);
                 TASK_RESET_FSM();
@@ -364,7 +362,7 @@ static fsm_rt_t task_orange(void)
                     &s_tFIFOout,
                     FN_ENQUEUE_BYTE
                 };
-                print_string_init(s_ptPrintString->chBuffer, &c_tCFG);
+                print_string_init((print_str_t*)s_ptPrintString->chBuffer, &c_tCFG);
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
@@ -376,7 +374,7 @@ static fsm_rt_t task_orange(void)
                 break;
             }
         case PRINT_ORANGE:
-            if (fsm_rt_cpl == print_string(s_ptPrintString->chBuffer)) {
+            if (fsm_rt_cpl == print_string((print_str_t*)s_ptPrintString->chBuffer)) {
                 print_str_pool_free(s_ptPrintString);
                 RESET_EVENT(&s_tPrintOrange);
                 TASK_RESET_FSM();

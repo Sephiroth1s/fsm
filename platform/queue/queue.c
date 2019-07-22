@@ -6,13 +6,14 @@
 #include "../uart/uart.h"
 #define this (*ptThis)
 
-bool enqueue_byte(void* pEnqueueByte, uint8_t chByte)
+bool enqueue_byte(byte_queue_t* ptThis, uint8_t chByte)
 {
-    byte_queue_t* ptThis = (byte_queue_t*)pEnqueueByte;
-    if ((ptThis == NULL) || (is_byte_queue_full(ptThis))) {
+    if ((ptThis == NULL) || (is_byte_queue_full(ptThis)||(this.pchBuffer==NULL))) {
+        while(!serial_out('0'));
         return false;
     }
     while(!serial_out('*'));
+    while(!serial_out(chByte));
     this.pchBuffer[this.hwTail] = chByte;
     this.hwTail++;
     if (this.hwTail >= this.hwSize) {
@@ -22,13 +23,13 @@ bool enqueue_byte(void* pEnqueueByte, uint8_t chByte)
     return true;
 }
 
-bool dequeue_byte(void* pDequeueByte, uint8_t* pchByte)
+bool dequeue_byte(byte_queue_t* ptThis, uint8_t* pchByte)
 {
-    byte_queue_t* ptThis = (byte_queue_t*)pDequeueByte;
     if ((ptThis == NULL) || (is_byte_queue_empty(ptThis))) {
         return false;
     }
     *pchByte = this.pchBuffer[this.hwHead];
+    while(!serial_out(*pchByte));
     this.hwHead++;
     if (this.hwHead >= this.hwSize) {
         this.hwHead = 0;
@@ -88,9 +89,8 @@ bool peek_byte_queue(byte_queue_t* ptThis, uint8_t* pchByte)
     return true;
 }
 
-bool reset_peek_byte(void* pPeekQueueByte)
+bool reset_peek_byte(byte_queue_t* ptThis)
 {
-    byte_queue_t* ptThis = (byte_queue_t*)pPeekQueueByte;
     if (NULL == ptThis) {
         return false;
     }
