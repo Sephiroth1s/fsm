@@ -9,11 +9,8 @@
 bool enqueue_byte(byte_queue_t* ptThis, uint8_t chByte)
 {
     if ((ptThis == NULL) || (is_byte_queue_full(ptThis)||(this.pchBuffer==NULL))) {
-        while(!serial_out('0'));
         return false;
     }
-    while(!serial_out('*'));
-    while(!serial_out(chByte));
     this.pchBuffer[this.hwTail] = chByte;
     this.hwTail++;
     if (this.hwTail >= this.hwSize) {
@@ -29,7 +26,6 @@ bool dequeue_byte(byte_queue_t* ptThis, uint8_t* pchByte)
         return false;
     }
     *pchByte = this.pchBuffer[this.hwHead];
-    while(!serial_out(*pchByte));
     this.hwHead++;
     if (this.hwHead >= this.hwSize) {
         this.hwHead = 0;

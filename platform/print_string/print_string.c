@@ -4,6 +4,7 @@
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "../queue/queue.h"
 #include "uart.h"
 #define this (*ptThis)
 
@@ -29,12 +30,9 @@ bool print_string_init(print_str_t *ptThis, const print_str_cfg_t *ptCFG)
     enum {
         START
     };
-    while (!serial_out('E'));
     if ((NULL == ptThis) || (NULL == ptCFG) || (NULL == ptCFG->fnPrintByte)) {
-        while (!serial_out('='));
         return false;
     }
-    while (!serial_out('F'));
     this.chState = START;
     this.pchString = ptCFG->pchString;
     this.pTarget = ptCFG->pTarget;
@@ -51,11 +49,9 @@ fsm_rt_t print_string(print_str_t *ptThis)
         PRINT_CHECK,
         PRINT_STR
     };
-    if (NULL == ptThis) {
-        while (!serial_out('#'));
+    if (NULL == ptThis || (this.fnPrintByte == NULL) || (NULL == this.pTarget)) {
         return fsm_rt_err;
     }
-    while (!serial_out('Q'));
     switch (this.chState) {
         case START:
             this.chState = PRINT_CHECK;
@@ -69,29 +65,17 @@ fsm_rt_t print_string(print_str_t *ptThis)
             }
             // break;
         case PRINT_STR:
-            while (!serial_out('W'));
-            if((this.fnPrintByte==NULL)||(NULL==this.pTarget)){
-                while (!serial_out('^'));
-            }
-            while (!serial_out('['));
             #ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
-            if (((*this.fnPrintByte)(this.pTarget, *this.pchString))) {
-                while (!serial_out(']'));
+            if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }
-            // if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
-            //     while (!serial_out(']'));
-            //     this.pchString++;
-            //     this.chState = PRINT_CHECK;
-            // }
             #else
             if (PRINT_STR_OUTPUT_BYTE(*this.pchString)) {
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }
             #endif
-            while (!serial_out('E'));
             break;
         default:
             return fsm_rt_err;
@@ -133,7 +117,7 @@ void print_str_pool_free(print_str_pool_item_t *ptItem)
 {
     if (ptItem != NULL) {
         ptItem->bIsFree = true;
-        memset(ptItem->chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
+        //memset(ptItem->chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
         s_chAllocateLength++;
     }
 }

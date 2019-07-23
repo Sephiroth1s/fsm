@@ -19,9 +19,9 @@
 #define INPUT_FIFO_SIZE 30
 #define OUTPUT_FIFO_SIZE 100
 
-#define FN_ENQUEUE_BYTE &enqueue_byte
-#define FN_DEQUEUE_BYTE &dequeue_byte
-#define FN_PEEK_BYTE_QUEUE &peek_byte_queue
+#define FN_ENQUEUE_BYTE (&enqueue_byte)
+#define FN_DEQUEUE_BYTE (&dequeue_byte)
+#define FN_PEEK_BYTE_QUEUE (&peek_byte_queue)
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
@@ -143,7 +143,6 @@ fsm_rt_t serial_out_task(void)
             }
             //break;
         case SEND_BYTE:
-        while(!serial_out('&'));
             if (serial_out(s_chByte)) {
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
@@ -168,7 +167,6 @@ static fsm_rt_t task_print_world(void)
             // break;
         case PRINT_WORLD:
             if (fsm_rt_cpl == task_world()) {
-                while (!serial_out('A'));
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
@@ -183,7 +181,7 @@ static fsm_rt_t task_print_world(void)
 static fsm_rt_t task_world(void)
 {
     static print_str_pool_item_t *s_ptPrintString;
-    static print_str_t tTest;
+    print_str_t * ptThis=(print_str_t*)s_ptPrintString->chBuffer;
     static enum {
         START,
         INIT,
@@ -198,7 +196,6 @@ static fsm_rt_t task_world(void)
             s_ptPrintString=print_str_pool_allocate();
             if (s_ptPrintString==NULL)
             {
-                while (!serial_out('B'));
                 TASK_RESET_FSM();
                 break;
             }
@@ -206,31 +203,24 @@ static fsm_rt_t task_world(void)
                 const print_str_cfg_t c_tCFG = {
                     "world\r\n",
                     &s_tFIFOout,
-                    FN_ENQUEUE_BYTE
+                    (&enqueue_byte)
                 };
-                while (!serial_out('C'));
                 print_string_init((print_str_t*)s_ptPrintString->chBuffer, &c_tCFG);
-                while (!serial_out('D'));
             } while (0);
             s_tState = WAIT_PRINT;
             // break;
         case WAIT_PRINT:
             if (WAIT_EVENT(&s_tPrintWorld)) {
-                while (!serial_out('Y'));
-                    s_tState = PRINT_WORLD;
+                s_tState = PRINT_WORLD;
             }
             break;
         case PRINT_WORLD:
-            while (!serial_out('P'));
             if (fsm_rt_cpl == print_string((print_str_t*)s_ptPrintString->chBuffer)) {
-                while (!serial_out('+'));
                 print_str_pool_free(s_ptPrintString);
-                while (!serial_out('-'));
                 RESET_EVENT(&s_tPrintWorld);
                 TASK_RESET_FSM();
                 return fsm_rt_cpl;
             }
-            while (!serial_out('O'));
             break;
         default:
             return fsm_rt_err;
@@ -409,7 +399,6 @@ fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *p
         case CHECK_STRING:
             *pbRequestDrop = false;
             if (fsm_rt_cpl == check_string(&this.tCheckHello, pbRequestDrop)) {
-                while (!serial_out('~'));
                 SET_EVENT(&s_tPrintWorld);
                 TASK_CHECK_RESET_FSM();
                 return fsm_rt_cpl;

@@ -49,3 +49,9 @@ bool serial_in(uint8_t *pchByte)
         return false;
     }
 }
+
+int fputc(int ch, FILE *f) {
+    while(__HAL_UART_GET_FLAG(&huart1,UART_FLAG_TC)==RESET);
+    serial_out(ch);
+    return ch;
+}
