@@ -49,24 +49,41 @@ fsm_rt_t print_string(print_str_t *ptThis)
         PRINT_CHECK,
         PRINT_STR
     };
-    if (NULL == ptThis || (this.fnPrintByte == NULL) || (NULL == this.pTarget)) {
+    // if (NULL == ptThis || (this.fnPrintByte == NULL) || (NULL == this.pTarget)) {
+    if (NULL == ptThis) {
         return fsm_rt_err;
     }
+    // if (NULL == this.fnPrintByte) {
+    //     while(!serial_out('-'));
+    //     return fsm_rt_err;
+    // }
+    // if (NULL == this.pTarget) {
+    //     while(!serial_out('='));
+    //     return fsm_rt_err;
+    // }
+    //未知bug:有上两行检测则工作正常，下方不能添加串口输出否则依旧无法正常工作
+    //while(!serial_out('A'));
     switch (this.chState) {
         case START:
+            // while(!serial_out('1'));
             this.chState = PRINT_CHECK;
             // break;
         case PRINT_CHECK:
+            // while(!serial_out('2'));
             if ('\0' == *this.pchString) {
+                while(!serial_out('3'));
                 TASK_STR_RESET_FSM();
                 return fsm_rt_cpl;
             } else {
+                // while(!serial_out('4'));
                 this.chState = PRINT_STR;
             }
             // break;
         case PRINT_STR:
+            // while(!serial_out('5'));
             #ifdef PRINT_STR_CFG_USE_FUNCTION_POINTER
             if (PRINT_STR_OUTPUT_BYTE(this.pTarget, *this.pchString)) {
+                while(!serial_out('6'));
                 this.pchString++;
                 this.chState = PRINT_CHECK;
             }
@@ -117,7 +134,7 @@ void print_str_pool_free(print_str_pool_item_t *ptItem)
 {
     if (ptItem != NULL) {
         ptItem->bIsFree = true;
-        //memset(ptItem->chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
+        memset(ptItem->chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
         s_chAllocateLength++;
     }
 }
