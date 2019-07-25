@@ -4,7 +4,7 @@
 #include "./platform/platform.h"
 #include "./platform/queue/queue.h"
 #include "./utilities/compiler.h"
-#include "./platform/check_use_peek/check_use_peek.h"
+
 /*============================ MACROS ========================================*/
 #define this (*ptThis)
 #define TASK_CHECK_RESET_FSM()      \
@@ -16,7 +16,6 @@
         s_tState = START; \
     } while (0)
 
-#define INPUT_FIFO_SIZE 30
 #define OUTPUT_FIFO_SIZE 100
 
 #define FN_ENQUEUE_BYTE (&enqueue_byte)
@@ -25,28 +24,12 @@
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
-typedef struct {
-    uint8_t chState;
-    check_str_t tCheckHello;
-} check_hello_pcb_t;
 
-typedef struct {
-    uint8_t chState;
-    check_str_t tCheckOrange;
-} check_orange_pcb_t;
-
-typedef struct {
-    uint8_t chState;
-    check_str_t tCheckApple;
-} check_apple_pcb_t;
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
-static event_t s_tPrintWorld, s_tPrintApple, s_tPrintOrange;
-static uint8_t s_chBytein[INPUT_FIFO_SIZE],s_chByteout[OUTPUT_FIFO_SIZE];
+static event_t s_tPrintWorld;
+static uint8_t s_chByteout[OUTPUT_FIFO_SIZE];
 static byte_queue_t s_tFIFOin, s_tFIFOout;
-static check_hello_pcb_t s_tCheckHelloPCB;
-static check_apple_pcb_t s_tCheckApplePCB;
-static check_orange_pcb_t s_tCheckOrangePCB;
 /*============================ PROTOTYPES ====================================*/
 /**
  * @brief  The application entry point.
@@ -55,72 +38,24 @@ static check_orange_pcb_t s_tCheckOrangePCB;
  */
 
 static fsm_rt_t task_print_world(void);
-static fsm_rt_t task_print_apple(void);
-static fsm_rt_t task_print_orange(void);
-
-static fsm_rt_t task_world(void);
-static fsm_rt_t task_apple(void);
-static fsm_rt_t task_orange(void);
-
-static fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
-static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
-static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop);
-
-static fsm_rt_t serial_in_task(void);
 static fsm_rt_t serial_out_task(void);
+static fsm_rt_t task_world(void);
+
+
 int main(void)
 {
-    static const check_agent_t c_tCheckWordsAgent[] = {
-                                {&s_tCheckHelloPCB, check_hello},
-                                {&s_tCheckApplePCB, check_apple},
-                                {&s_tCheckOrangePCB, check_orange}};
-    static const check_use_peek_cfg_t c_tCheckWordsUsePeekCFG = {
-                                        UBOUND(c_tCheckWordsAgent),
-                                        &s_tFIFOin,
-                                        (check_agent_t *)c_tCheckWordsAgent};
-    static check_use_peek_t s_tCheckWordsUsePeek;
     platform_init();
     print_str_pool_item_init();
     INIT_EVENT(&s_tPrintWorld, false, false);
-    INIT_EVENT(&s_tPrintApple, false, false);
-    INIT_EVENT(&s_tPrintOrange, false, false);
-    INIT_BYTE_QUEUE(&s_tFIFOin, s_chBytein, sizeof(s_chBytein));
     INIT_BYTE_QUEUE(&s_tFIFOout, s_chByteout, sizeof(s_chByteout));
-    check_use_peek_init(&s_tCheckWordsUsePeek, &c_tCheckWordsUsePeekCFG);
     LED1_OFF();
+    SET_EVENT(&s_tPrintWorld);
     while (1) {
         breath_led();
-        task_print_world();
-        // task_print_apple();
-        // task_print_orange();
-        task_check_use_peek(&s_tCheckWordsUsePeek);
-        serial_in_task();
+        task_world();
+        //task_print_world();
         serial_out_task();
     }
-}
-
-fsm_rt_t serial_in_task(void)
-{
-    static enum {
-        START,
-        REDA_AND_ENQUEUE
-    } s_tState = START;
-    uint8_t chByte;
-    switch (s_tState) {
-        case START:
-            s_tState = START;
-            //break;
-        case REDA_AND_ENQUEUE:
-            if (serial_in(&chByte)) {
-                ENQUEUE_BYTE(&s_tFIFOin, chByte);
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
 }
 
 fsm_rt_t serial_out_task(void)
@@ -181,7 +116,6 @@ static fsm_rt_t task_print_world(void)
 static fsm_rt_t task_world(void)
 {
     static print_str_pool_item_t *s_ptPrintString;
-    print_str_t * ptThis=(print_str_t*)s_ptPrintString->chBuffer;
     static enum {
         START,
         INIT,
@@ -229,248 +163,3 @@ static fsm_rt_t task_world(void)
     return fsm_rt_on_going;
 }
 
-static fsm_rt_t task_print_apple(void)
-{
-    static enum {
-        START,
-        PRINT_APPLE
-    } s_tState = START;
-    switch (s_tState) {
-        case START:
-            s_tState = START;
-            // break;
-        case PRINT_APPLE:
-            if (fsm_rt_cpl == task_apple()) {
-                TASK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}
-
-static fsm_rt_t task_apple(void)
-{
-    static print_str_pool_item_t *s_ptPrintString;
-    static enum {
-        START,
-        INIT,
-        WAIT_PRINT,
-        PRINT_APPLE
-    } s_tState = START;
-    switch (s_tState) {
-        case START:
-            s_tState=INIT;
-            //break;
-        case INIT:
-            s_ptPrintString=print_str_pool_allocate();
-            if (s_ptPrintString==NULL)
-            {
-                TASK_RESET_FSM();
-                break;
-            }
-            do {
-                const print_str_cfg_t c_tCFG = {
-                    "apple\r\n", 
-                    &s_tFIFOout,
-                    FN_ENQUEUE_BYTE
-                };
-                print_string_init((print_str_t*)s_ptPrintString->chBuffer, &c_tCFG);
-            } while (0);
-            s_tState = WAIT_PRINT;
-            // break;
-        case WAIT_PRINT:
-            if (WAIT_EVENT(&s_tPrintApple)) {
-                s_tState = PRINT_APPLE;
-                // break;
-            } else {
-                break;
-            }
-        case PRINT_APPLE:
-            if (fsm_rt_cpl == print_string((print_str_t*)s_ptPrintString->chBuffer)) {
-                print_str_pool_free(s_ptPrintString);
-                RESET_EVENT(&s_tPrintApple);
-                TASK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}
-
-static fsm_rt_t task_print_orange(void)
-{
-    static enum {
-        START,
-        PRINT_ORANGE
-    } s_tState = START;
-    switch (s_tState) {
-        case START:
-            s_tState = START;
-            // break;
-        case PRINT_ORANGE:
-            if (fsm_rt_cpl == task_orange()) {
-                TASK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}
-
-static fsm_rt_t task_orange(void)
-{
-    static print_str_pool_item_t* s_ptPrintString;
-    static enum {
-        START,
-        INIT,
-        WAIT_PRINT,
-        PRINT_ORANGE
-    } s_tState = START;
-    switch (s_tState) {
-        case START:
-            s_tState=INIT;
-            //break;
-        case INIT:
-            s_ptPrintString=print_str_pool_allocate();
-            if (s_ptPrintString==NULL)
-            {
-                TASK_RESET_FSM();
-                break;
-            }
-            do {
-                const print_str_cfg_t c_tCFG = {
-                    "orange\r\n", 
-                    &s_tFIFOout,
-                    FN_ENQUEUE_BYTE
-                };
-                print_string_init((print_str_t*)s_ptPrintString->chBuffer, &c_tCFG);
-            } while (0);
-            s_tState = WAIT_PRINT;
-            // break;
-        case WAIT_PRINT:
-            if (WAIT_EVENT(&s_tPrintOrange)) {
-                s_tState = PRINT_ORANGE;
-                // break;
-            } else {
-                break;
-            }
-        case PRINT_ORANGE:
-            if (fsm_rt_cpl == print_string((print_str_t*)s_ptPrintString->chBuffer)) {
-                print_str_pool_free(s_ptPrintString);
-                RESET_EVENT(&s_tPrintOrange);
-                TASK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}
-
-fsm_rt_t check_hello(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *pbRequestDrop)
-{
-    check_hello_pcb_t *ptThis = (check_hello_pcb_t *)pTarget;
-    enum {
-        START,
-        CHECK_STRING
-    };
-    switch (this.chState) {
-        case START:
-            do {
-                const check_str_cfg_t c_tCFG = {
-                    "hello",
-                    ptReadByte};
-                check_string_init(&this.tCheckHello, &c_tCFG);
-            } while (0);
-            this.chState = CHECK_STRING;
-            // break;
-        case CHECK_STRING:
-            *pbRequestDrop = false;
-            if (fsm_rt_cpl == check_string(&this.tCheckHello, pbRequestDrop)) {
-                SET_EVENT(&s_tPrintWorld);
-                TASK_CHECK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}
-
-static fsm_rt_t check_apple(void *pTarget, read_byte_evt_handler_t *ptReadByte,  bool *pbRequestDrop)
-{
-    check_apple_pcb_t *ptThis=(check_apple_pcb_t *)pTarget;
-    enum {
-        START,
-        CHECK_STRING
-    };
-    switch (this.chState) {
-        case START:
-            do {
-                const check_str_cfg_t c_tCFG = {
-                    "apple",
-                    ptReadByte};
-                check_string_init(&this.tCheckApple, &c_tCFG);
-            } while (0);
-            this.chState = CHECK_STRING;
-            // break;
-        case CHECK_STRING:
-            *pbRequestDrop = false;
-            if (fsm_rt_cpl == check_string(&this.tCheckApple, pbRequestDrop)) {
-                SET_EVENT(&s_tPrintApple);
-                TASK_CHECK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}
-
-static fsm_rt_t check_orange(void *pTarget, read_byte_evt_handler_t *ptReadByte, bool *pbRequestDrop)
-{
-    check_orange_pcb_t *ptThis = (check_orange_pcb_t *)pTarget;
-    enum {
-        START,
-        CHECK_STRING
-    };
-    switch (this.chState) {
-        case START:
-            do {
-                const check_str_cfg_t c_tCFG = {
-                    "orange",
-                    ptReadByte};
-                check_string_init(&this.tCheckOrange, &c_tCFG);
-            } while (0);
-            this.chState = CHECK_STRING;
-            // break;
-        case CHECK_STRING:
-            *pbRequestDrop = false;
-            if (fsm_rt_cpl == check_string(&this.tCheckOrange, pbRequestDrop)) {
-                SET_EVENT(&s_tPrintOrange);
-                TASK_CHECK_RESET_FSM();
-                return fsm_rt_cpl;
-            }
-            break;
-        default:
-            return fsm_rt_err;
-            break;
-    }
-    return fsm_rt_on_going;
-}

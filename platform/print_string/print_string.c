@@ -62,7 +62,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
     //     return fsm_rt_err;
     // }
     //未知bug:有上两行检测则工作正常，下方不能添加串口输出否则依旧无法正常工作
-    //while(!serial_out('A'));
+    // while(!serial_out('A'));
     switch (this.chState) {
         case START:
             // while(!serial_out('1'));
@@ -132,7 +132,7 @@ print_str_pool_item_t *print_str_pool_allocate(void)
 
 void print_str_pool_free(print_str_pool_item_t *ptItem)
 {
-    if (ptItem != NULL) {
+    if (!(ptItem->bIsFree)&&(ptItem != NULL)) {
         ptItem->bIsFree = true;
         memset(ptItem->chBuffer, 0, PRINT_STR_POOL_ITEM_SIZE);
         s_chAllocateLength++;
