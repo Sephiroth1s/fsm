@@ -62,7 +62,7 @@ fsm_rt_t print_string(print_str_t *ptThis)
     //     return fsm_rt_err;
     // }
     //未知bug:有上两行检测则工作正常，下方不能添加串口输出否则依旧无法正常工作
-    // while(!serial_out('A'));
+    while(!serial_out('A'));
     switch (this.chState) {
         case START:
             // while(!serial_out('1'));
