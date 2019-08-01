@@ -4,8 +4,8 @@
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include "../queue/queue.h"
-#include "uart.h"
 #define this (*ptThis)
 
 #define TASK_STR_RESET_FSM()  \
