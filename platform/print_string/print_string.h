@@ -1,6 +1,7 @@
 #include "app_cfg.h"
 #ifndef __PRINT_STRING_H__
 #define __PRINT_STRING_H__
+
 #include "../utilities/arm/app_type.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -29,9 +30,9 @@ typedef struct {
 
 typedef struct print_str_pool_item_t print_str_pool_item_t;
 struct print_str_pool_item_t {
-    bool bIsFree;
     uint8_t chBuffer[PRINT_STR_POOL_ITEM_SIZE];
-};
+    bool bIsFree;
+} __attribute__ ((aligned (4)));
 
 print_str_pool_item_t *print_str_pool_allocate(void);
 void print_str_pool_free(print_str_pool_item_t *ptItem);
